@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private Live</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Login Modal -->
+    <div class="login-modal" id="loginModal">
+        <div class="login-modal-content">
+            <div class="login-modal-header">
+                <div class="login-modal-title">Private Live</div>
+            </div>
+            <div class="login-modal-body">
+                <div class="login-input-group">
+                    <label class="login-label" for="phoneNumber">ফোন নাম্বার</label>
+                    <input type="tel" class="login-input" id="phoneNumber" placeholder="01XXXXXXXXX" maxlength="11">
+                    <div class="login-warning" id="phoneWarning">অনুগ্রহ করে সঠিক ফোন নাম্বার দিন (11 ডিজিট, 01 দিয়ে শুরু)</div>
+                </div>
+                <button class="login-btn" id="watchBtn">Watch</button>
+                <div class="login-info">সঠিক ফোন নাম্বার দিলে সম্পূর্ণ অ্যাক্সেস পাবেন</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Premium Warning Modal -->
+    <div class="premium-modal" id="premiumModal">
+        <div class="premium-modal-content">
+            <button class="premium-close-btn" id="closePremiumModal">&times;</button>
+            <div class="premium-modal-body">
+                <div class="premium-icon">
+                    <i class="fas fa-face-frown-open"></i>
+                </div>
+                <div class="premium-message">
+                    আপনার অ্যাক্সেস সীমিত। সম্পূর্ণ অ্যাক্সেস পেতে প্রিমিয়াম প্যাকেজ কিনুন।
+                </div>
+                <a href="https://buypremium.com" target="_blank" class="premium-btn">Buy Premium</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Restricted Access Modal -->
+    <div class="restricted-modal" id="restrictedModal">
+        <div class="restricted-modal-content">
+            <div class="restricted-modal-body">
+                <div class="restricted-icon">
+                    <i class="fas fa-face-frown-open"></i>
+                </div>
+                <div class="restricted-message">
+                    You don't have access to this feature. Please contact us to upgrade.
+                </div>
+                <a href="https://contactis.com" target="_blank" class="restricted-btn">Contact Us</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- User Profile Modal -->
+    <div class="user-modal" id="userModal">
+        <div class="user-modal-content">
+            <button class="user-close-btn" id="closeUserModalHeader">&times;</button>
+            <div class="user-modal-header">
+                <!-- Content will be dynamically generated -->
+            </div>
+            <div class="user-modal-body">
+                <!-- Content will be dynamically generated -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Package Modal -->
+    <div class="package-modal" id="packageModal">
+        <div class="package-modal-content">
+            <div class="package-modal-header">
+                <div class="package-modal-title">Our Packages</div>
+                <button class="package-close-btn" id="closePackageModal">&times;</button>
+            </div>
+            <div class="package-modal-body" id="packageModalBody">
+                <!-- Package cards will be dynamically generated -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="header">
+        <div class="header-title">
+            <div class="header-icon" id="headerIcon"></div>
+            <h1 id="headerTitle">Private Live</h1>
+        </div>
+        <div class="total-active" id="totalActiveChannels">Active: 0</div>
+    </div>
+    
+    <div class="container">
+        <div class="channel-grid" id="channelContainer">
+            <div class="status-checking">
+                <div class="spinner"></div>
+                <div>পছন্দের এন্টারটেইনার খোঁজা হচ্ছে ...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Saved Channels Section -->
+    <div class="saved-channels-section">
+        <div class="tv-icon-container" id="tvIcon">
+            <div class="tv-icon">
+                <i class="fas fa-tv"></i>
+            </div>
+            <div class="favorite-text">TV Channels</div>
+        </div>
+        
+        <div class="tools-icon-container" id="toolsIcon">
+            <div class="tools-icon">
+                <i class="fas fa-tools"></i>
+            </div>
+            <div class="favorite-text">Tools</div>
+        </div>
+        
+        <div class="saved-channels-icon-container" id="savedChannelsIcon">
+            <div class="saved-channels-icon">
+                <i class="fas fa-heart"></i>
+            </div>
+            <div class="favorite-text">Favorite</div>
+        </div>
+        
+        <div class="package-icon-container" id="packageIcon">
+            <div class="package-icon">
+                <i class="fas fa-box"></i>
+            </div>
+            <div class="favorite-text">Package</div>
+        </div>
+        
+        <div class="user-icon-container" id="userIcon">
+            <div class="user-icon">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="favorite-text">Profile</div>
+        </div>
+    </div>
+    
+    <!-- TV Channels Modal -->
+    <div class="tv-channels-modal" id="tvChannelsModal">
+        <div class="tv-channels-modal-content">
+            <div class="tv-channels-modal-header">
+                <div class="tv-channels-modal-title">TV Channels</div>
+                <button class="tv-channels-close-btn" id="closeTvChannelsModal">&times;</button>
+            </div>
+            <div class="tv-channels-modal-body" id="tvChannelsModalBody">
+                <!-- TV channels will be displayed here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tools Modal -->
+    <div class="tools-modal" id="toolsModal">
+        <div class="tools-modal-content">
+            <div class="tools-modal-header">
+                <div class="tools-modal-title">Tools</div>
+                <button class="tools-close-btn" id="closeToolsModal">&times;</button>
+            </div>
+            <div class="tools-modal-body" id="toolsModalBody">
+                <!-- Tools will be displayed here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Saved Channels Modal -->
+    <div class="saved-channels-modal" id="savedChannelsModal">
+        <div class="saved-channels-modal-content">
+            <div class="saved-channels-modal-header">
+                <div class="saved-channels-modal-title">Saved Channels</div>
+                <button class="saved-channels-close-btn" id="closeSavedChannelsModal">&times;</button>
+            </div>
+            <div class="saved-channels-modal-body" id="savedChannelsModalBody">
+                <!-- No Saved Channels Message -->
+                <div class="no-saved-channels" id="noSavedChannelsMessage">
+                  <i class="fas fa-heart-broken broken-heart"></i>
+                    <h3>No Saved Channels</h3>
+                    <p>You haven't saved any channels yet.</p>
+                </div>
+                
+                <!-- Checking Saved Channels Status -->
+                <div class="checking-status" id="checkingSavedChannelsStatus">
+                    <div class="spinner"></div>
+                    Checking saved channels status...
+                </div>
+                
+                <!-- Saved channels will be displayed here -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="videoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title-container">
+                    <img class="modal-profile-pic" id="modalProfilePic" src="" alt="Profile">
+                    <div class="modal-title-wrapper">
+                        <div class="modal-title-line">
+                            <div class="modal-title" id="modalTitle"></div>
+                            <button class="modal-favorite-btn" id="modalFavoriteBtn">
+                                <i class="fas fa-plus"></i>
+                                Favorite
+                            </button>
+                        </div>
+                        <div class="modal-live-badge">Active Now</div>
+                    </div>
+                </div>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="video-container">
+                    <video id="videoPlayer" playsinline webkit-playsinline x5-playsinline></video>
+                    <div class="loading" id="loadingMessage">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Empty State Message -->
+    <div class="empty-state" id="emptyStateMessage" style="display: none;">
+        <h3>দুঃখিত</h3>
+        <p>এই মুহূর্তে কোনো এন্টারটেইনার লাইভে নেই</p>
+    </div>
+    
+    <canvas id="thumbnailCanvas" style="display: none;"></canvas>
+    
+    <!-- External Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="data/premiumUsers.js"></script>
+    <script src="data/channels.js"></script>
+    <script src="data/tvChannels.js"></script>
+    <script src="data/tools.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
