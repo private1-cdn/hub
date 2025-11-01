@@ -1,21 +1,22 @@
-// Premium users data with names and expiry dates
-const premiumUsers = {
-    "01712345678": {
-        name: "VIP User 1",
-        expiryDate: "2024-12-12T22:10:00", // Expired date for testing
-        tvChannel: "yes",
-        openTools: "yes"
+// premiumusers.js - Premium User Data
+
+const premiumUsers = [
+    {
+        phone: "01707665513",
+        name: "Premium User 1",
+        expiryDate: "31:12:2024",
+        expiryTime: "23:59"
     },
-    "01811223344": {
-        name: "Premium User 2", 
-        expiryDate: "2025-11-15T20:30:00",
-        tvChannel: "yes",
-        openTools: "yes"
+    {
+        phone: "01303665513",
+        name: "VIP Member",
+        expiryDate: "15:06:2024",
+        expiryTime: "12:00"
     },
-    "01900112233": {
-        name: "Gold User 3",
-        expiryDate: "2025-10-10T18:45:00",
-        tvChannel: "no",
-        openTools: "yes"
+    {
+        phone: "01645500055",
+        name: "Gold Subscriber",
+        expiryDate: "12:12:2025",
+        expiryTime: "18:30"
     }
-};
+];
