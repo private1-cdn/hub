@@ -1,4 +1,4 @@
-const channels = [
+const entertainers = [
         {
                 id: 1,
                 name: "Sonirajpoot1",
@@ -5418,3 +5418,181 @@ const channels = [
 }
         
     ];
+
+
+// প্রতিটি entertainer এর জন্য unique ID যোগ করছি
+entertainers.forEach((entertainer, index) => {
+    entertainer.id = index + 1;
+});
+
+// Entertainer-related functions
+function captureThumbnail(videoElement, entertainerId) {
+    return new Promise((resolve) => {
+        try {
+            if (!videoElement || videoElement.readyState < 2) {
+                console.log(`Video not ready for entertainer ${entertainerId}, retrying...`);
+                setTimeout(() => captureThumbnail(videoElement, entertainerId).then(resolve), 1000);
+                return;
+            }
+            
+            thumbnailCanvas.width = videoElement.videoWidth || 300;
+            thumbnailCanvas.height = videoElement.videoHeight || 300;
+            
+            thumbnailCtx.drawImage(videoElement, 0, 0, thumbnailCanvas.width, thumbnailCanvas.height);
+            
+            const dataUrl = thumbnailCanvas.toDataURL('image/jpeg', 0.7);
+            
+            const entertainer = entertainers.find(c => c.id === entertainerId);
+            if (entertainer) {
+                entertainer.hasThumbnail = true;
+                entertainer.thumbnail = dataUrl;
+            }
+            
+            document.querySelectorAll(`.entertainer-card[data-entertainer-id="${entertainerId}"] .entertainer-thumbnail img`).forEach(img => {
+                img.style.opacity = 0;
+                setTimeout(() => {
+                    img.src = dataUrl;
+                    img.style.opacity = 1;
+                    
+                    const loadingElement = document.querySelector(`.entertainer-card[data-entertainer-id="${entertainerId}"] .thumbnail-loading`);
+                    if (loadingElement) {
+                        loadingElement.style.display = 'none';
+                    }
+                }, 100);
+            });
+            
+            resolve(true);
+        } catch (error) {
+            console.error('Error capturing thumbnail:', error);
+            resolve(false);
+        }
+    });
+}
+
+function startThumbnailUpdates(entertainer) {
+    if (!entertainer.videoElement || entertainer.hasThumbnail) return;
+    
+    const loadingElement = document.querySelector(`.entertainer-card[data-entertainer-id="${entertainer.id}"] .thumbnail-loading`);
+    if (loadingElement) {
+        loadingElement.style.display = 'flex';
+    }
+    
+    const checkVideoReady = () => {
+        if (entertainer.videoElement && entertainer.videoElement.readyState >= 2) {
+            captureThumbnail(entertainer.videoElement, entertainer.id).then(success => {
+                if (success) {
+                    console.log(`Thumbnail captured for entertainer ${entertainer.id}`);
+                    stopThumbnailUpdates(entertainer);
+                    currentThumbnailLoads--;
+                    processThumbnailQueue();
+                } else {
+                    console.log(`Failed to capture thumbnail for entertainer ${entertainer.id}, retrying...`);
+                    setTimeout(checkVideoReady, 2000);
+                }
+            });
+        } else {
+            setTimeout(checkVideoReady, 1000);
+        }
+    };
+    
+    checkVideoReady();
+}
+
+function stopThumbnailUpdates(entertainer) {
+    if (entertainer.thumbnailUpdateInterval) {
+        clearInterval(entertainer.thumbnailUpdateInterval);
+        entertainer.thumbnailUpdateInterval = null;
+    }
+    if (entertainer.videoElement) {
+        entertainer.videoElement.pause();
+        entertainer.videoElement.removeAttribute('src');
+        entertainer.videoElement.load();
+        entertainer.videoElement = null;
+    }
+    if (entertainer._hls) {
+        entertainer._hls.destroy();
+        entertainer._hls = null;
+    }
+}
+
+async function checkStream(entertainer) {
+    return new Promise((resolve) => {
+        if (!Hls.isSupported()) {
+            const video = document.createElement('video');
+            video.src = entertainer.m3u8Url;
+            video.addEventListener('error', () => resolve(false));
+            video.addEventListener('loadedmetadata', () => {
+                resolve(true);
+                video.remove();
+            });
+            return;
+        }
+        
+        const hls = new Hls({
+            maxMaxBufferLength: 5,
+            maxBufferSize: 1000000,
+            maxBufferLength: 5,
+            lowLatencyMode: false,
+            enableWorker: false
+        });
+        
+        let timeout = setTimeout(() => {
+            hls.destroy();
+            resolve(false);
+        }, 8000);
+        
+        hls.loadSource(entertainer.m3u8Url);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            clearTimeout(timeout);
+            hls.destroy();
+            resolve(true);
+        });
+        
+        hls.on(Hls.Events.ERROR, () => {
+            clearTimeout(timeout);
+            hls.destroy();
+            resolve(false);
+        });
+    });
+}
+
+async function checkStreamFast(entertainer) {
+    return new Promise((resolve) => {
+        if (!Hls.isSupported()) {
+            const video = document.createElement('video');
+            video.src = entertainer.m3u8Url;
+            video.addEventListener('error', () => resolve(false));
+            video.addEventListener('loadedmetadata', () => {
+                resolve(true);
+                video.remove();
+            });
+            return;
+        }
+        
+        const hls = new Hls({
+            maxMaxBufferLength: 5,
+            maxBufferSize: 1000000,
+            maxBufferLength: 5,
+            lowLatencyMode: false,
+            enableWorker: false
+        });
+        
+        let timeout = setTimeout(() => {
+            hls.destroy();
+            resolve(false);
+        }, 3000);
+        
+        hls.loadSource(entertainer.m3u8Url);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            clearTimeout(timeout);
+            hls.destroy();
+            resolve(true);
+        });
+        
+        hls.on(Hls.Events.ERROR, () => {
+            clearTimeout(timeout);
+            hls.destroy();
+            resolve(false);
+        });
+    });
+}
