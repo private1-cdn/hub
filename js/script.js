@@ -1,142 +1,7 @@
-// Configuration variables
-const batchSize = 200;
-const batchInterval = 5000;
-const channelsPerPage = 20;
-const maxConcurrentThumbnails = 2;
-const autoRecheckInterval = 60000;
-
-// Package data for package modal
-const packages = [
-    {
-        name: "Basic Package",
-        price: "$9.99/month",
-        features: [
-            { included: true, text: "Access to all channels" },
-            { included: true, text: "HD Quality Streaming" },
-            { included: true, text: "No Ads" },
-            { included: false, text: "TV Channels Access" },
-            { included: false, text: "Tools Access" }
-        ],
-        contactUrl: "https://wa.me/1234567890?text=Hi,%20I'm%20interested%20in%20Basic%20Package"
-    },
-    {
-        name: "Premium Package",
-        price: "$19.99/month",
-        features: [
-            { included: true, text: "Access to all channels" },
-            { included: true, text: "HD Quality Streaming" },
-            { included: true, text: "No Ads" },
-            { included: true, text: "TV Channels Access" },
-            { included: true, text: "Tools Access" }
-        ],
-        contactUrl: "https://wa.me/1234567890?text=Hi,%20I'm%20interested%20in%20Premium%20Package"
-    },
-    {
-        name: "Family Package",
-        price: "$29.99/month",
-        features: [
-            { included: true, text: "Access to all channels" },
-            { included: true, text: "HD Quality Streaming" },
-            { included: true, text: "No Ads" },
-            { included: true, text: "TV Channels Access" },
-            { included: true, text: "Tools Access" },
-            { included: true, text: "Up to 5 Devices" }
-        ],
-        contactUrl: "https://wa.me/1234567890?text=Hi,%20I'm%20interested%20in%20Family%20Package"
-    }
-];
-
-// Utility functions
-function validatePhoneNumber(phone) {
-    const phoneRegex = /^01[0-9]{9}$/;
-    return phoneRegex.test(phone);
-}
-
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    const options = { 
-        day: '2-digit', 
-        month: '2-digit', 
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-    };
-    return date.toLocaleString('en-GB', options).replace(',', ' /');
-}
-
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
-
-// Check if user is premium
-function isPremiumUser(phone) {
-    return premiumUsers.hasOwnProperty(phone);
-}
-
-// Check if premium user's package has expired
-function isPremiumExpired(phone) {
-    if (!isPremiumUser(phone)) return false;
-    
-    const userPackageInfo = premiumUsers[phone];
-    const expiryDate = new Date(userPackageInfo.expiryDate);
-    const currentDate = new Date();
-    
-    return currentDate > expiryDate;
-}
-
-// Get user package expiry info
-function getUserPackageInfo(phone) {
-    if (isPremiumUser(phone)) {
-        return premiumUsers[phone];
-    }
-    return null;
-}
-
-// Check if user has TV channel access
-function hasTvChannelAccess(phone) {
-    if (!isPremiumUser(phone) || isPremiumExpired(phone)) return false;
-    
-    const userPackageInfo = premiumUsers[phone];
-    return userPackageInfo.tvChannel === "yes";
-}
-
-// Check if user has tools access
-function hasToolsAccess(phone) {
-    if (!isPremiumUser(phone) || isPremiumExpired(phone)) return false;
-    
-    const userPackageInfo = premiumUsers[phone];
-    return userPackageInfo.openTools === "yes";
-}
-
-// Main application logic
-// User verification state
-let isVerifiedUser = false;
-let userPhoneNumber = '';
-let videoStopTimer = null;
-let countdownInterval = null;
-let isExpiredPremium = false;
+// script.js - Main JavaScript logic
 
 // DOM Elements
-const loginModal = document.getElementById('loginModal');
-const phoneNumberInput = document.getElementById('phoneNumber');
-const phoneWarning = document.getElementById('phoneWarning');
-const watchBtn = document.getElementById('watchBtn');
-const premiumModal = document.getElementById('premiumModal');
-const closePremiumModal = document.getElementById('closePremiumModal');
-const restrictedModal = document.getElementById('restrictedModal');
-const userModal = document.getElementById('userModal');
-const closeUserModalHeader = document.getElementById('closeUserModalHeader');
-const userIcon = document.getElementById('userIcon');
-const headerTitle = document.getElementById('headerTitle');
-const headerIcon = document.getElementById('headerIcon');
-const totalActiveChannelsEl = document.getElementById('totalActiveChannels');
-
-const channelContainer = document.getElementById('channelContainer');
+const entertainerContainer = document.getElementById('entertainerContainer');
 const videoModal = document.getElementById('videoModal');
 const closeModal = document.getElementById('closeModal');
 const videoPlayer = document.getElementById('videoPlayer');
@@ -144,368 +9,194 @@ const modalTitle = document.getElementById('modalTitle');
 const modalProfilePic = document.getElementById('modalProfilePic');
 const modalFavoriteBtn = document.getElementById('modalFavoriteBtn');
 const loadingMessage = document.getElementById('loadingMessage');
+const totalActiveEntertainersEl = document.getElementById('totalActiveEntertainers');
 const thumbnailCanvas = document.getElementById('thumbnailCanvas');
 const thumbnailCtx = thumbnailCanvas.getContext('2d');
-const savedChannelsIcon = document.getElementById('savedChannelsIcon');
-const savedChannelsModal = document.getElementById('savedChannelsModal');
-const closeSavedChannelsModal = document.getElementById('closeSavedChannelsModal');
-const savedChannelsModalBody = document.getElementById('savedChannelsModalBody');
-const noSavedChannelsMessage = document.getElementById('noSavedChannelsMessage');
-const checkingSavedChannelsStatus = document.getElementById('checkingSavedChannelsStatus');
-const emptyStateMessage = document.getElementById('emptyStateMessage');
-
-// New TV channels elements
+const savedEntertainersIcon = document.getElementById('savedEntertainersIcon');
 const tvIcon = document.getElementById('tvIcon');
-const tvChannelsModal = document.getElementById('tvChannelsModal');
-const closeTvChannelsModal = document.getElementById('closeTvChannelsModal');
-const tvChannelsModalBody = document.getElementById('tvChannelsModalBody');
+const combinedModal = document.getElementById('combinedModal');
+const closeCombinedModal = document.getElementById('closeCombinedModal');
+const combinedModalBody = document.getElementById('combinedModalBody');
+const combinedModalTitle = document.getElementById('combinedModalTitle');
+const emptyStateMessage = document.getElementById('emptyStateMessage');
+const userIcon = document.getElementById('userIcon');
+const menuIcon = document.getElementById('menuIcon');
+const countryMenu = document.getElementById('countryMenu');
+const countryButtons = document.querySelectorAll('.country-btn');
+const warningPopup = document.getElementById('warningPopup');
+const closeWarningPopup = document.getElementById('closeWarningPopup');
+const headerTitle = document.getElementById('headerTitle');
+const loginSuccessAlert = document.getElementById('loginSuccessAlert');
+const videoCountdown = document.getElementById('videoCountdown');
+const videoCountdownTimer = document.getElementById('videoCountdownTimer');
+const packageIcon = document.getElementById('packageIcon'); // New package icon
 
-// New Tools elements
-const toolsIcon = document.getElementById('toolsIcon');
-const toolsModal = document.getElementById('toolsModal');
-const closeToolsModal = document.getElementById('closeToolsModal');
-const toolsModalBody = document.getElementById('toolsModalBody');
-
-// New Package elements
-const packageIcon = document.getElementById('packageIcon');
-const packageModal = document.getElementById('packageModal');
-const closePackageModal = document.getElementById('closePackageModal');
-const packageModalBody = document.getElementById('packageModalBody');
-
-let activeChannels = [];
-let displayedChannels = [];
-let checkedChannels = new Set();
+// Global Variables
+let activeEntertainers = [];
+let displayedEntertainers = [];
+let checkedEntertainers = new Set();
 let isInitialLoad = true;
+let batchSize = 200;
+let batchInterval = 5000;
 let batchIntervalId = null;
+let entertainersPerPage = 20;
 let currentPage = 1;
 let thumbnailQueue = [];
 let currentThumbnailLoads = 0;
+const maxConcurrentThumbnails = 2;
 let autoRecheckIntervalId = null;
+const autoRecheckInterval = 60000;
 let isFirstLoad = true;
-let savedChannels = JSON.parse(localStorage.getItem('privateLiveSavedChannels')) || [];
-let currentVideoChannel = null;
+let savedEntertainers = JSON.parse(localStorage.getItem('privateLiveSavedEntertainers')) || [];
+let currentVideoEntertainer = null;
+let isCountryMenuOpen = false;
+let currentModalMode = 'favorites'; // 'favorites', 'country', 'tv', 'profile', or 'pricing'
+let currentUser = null; // Track logged in user
+let countdownInterval = null; // For countdown timer
+let videoCountdownInterval = null; // For video modal countdown
+let hasShownLoginSuccess = false; // Track if login success has been shown
 
-// Countdown timer function
-function startCountdown(expiryDate) {
-    const countdownElement = document.querySelector('.premium-countdown');
-    if (!countdownElement) return;
-    
-    function updateCountdown() {
-        const now = new Date().getTime();
-        const expiry = new Date(expiryDate).getTime();
-        const timeLeft = expiry - now;
-        
-        if (timeLeft <= 0) {
-            countdownElement.innerHTML = '<div class="countdown-title">Package Expired!</div>';
-            clearInterval(countdownInterval);
-            return;
+// Add the ad script
+const adScript = document.createElement('script');
+adScript.src = '//jagnaimsee.net/vignette.min.js';
+adScript.setAttribute('data-zone', '9086463');
+adScript.setAttribute('data-sdk', 'show_9086463');
+document.head.appendChild(adScript);
+
+// Function to watch ad
+function watchAd() {
+    return new Promise((resolve, reject) => {
+        if (typeof show_9086463 === 'function') {
+            show_9086463().then(() => {
+                resolve();
+            }).catch((error) => {
+                console.error('Ad error:', error);
+                resolve(); // Resolve anyway to continue
+            });
+        } else {
+            // If ad function is not available, resolve immediately
+            console.log('Ad function not available');
+            resolve();
         }
-        
-        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-        
-        countdownElement.innerHTML = `
-            <div class="countdown-title">Package Expires In:</div>
-            <div class="countdown-timer">
-                <div class="countdown-unit">
-                    <div class="countdown-value">${days}</div>
-                    <div class="countdown-label">Days</div>
-                </div>
-                <div class="countdown-unit">
-                    <div class="countdown-value">${hours}</div>
-                    <div class="countdown-label">Hours</div>
-                </div>
-                <div class="countdown-unit">
-                    <div class="countdown-value">${minutes}</div>
-                    <div class="countdown-label">Minutes</div>
-                </div>
-                <div class="countdown-unit">
-                    <div class="countdown-value">${seconds}</div>
-                    <div class="countdown-label">Seconds</div>
-                </div>
-            </div>
-        `;
-    }
-    
-    updateCountdown();
-    countdownInterval = setInterval(updateCountdown, 1000);
-    return countdownInterval;
-}
-
-// Update header based on user type
-function updateHeader() {
-    if (isVerifiedUser && !isExpiredPremium) {
-        headerTitle.textContent = "PremiumHub";
-        headerTitle.className = "header-premium";
-        headerIcon.innerHTML = '<i class="fas fa-crown" style="color: gold;"></i>';
-        headerIcon.className = "header-icon header-premium";
-    } else if (isExpiredPremium) {
-        headerTitle.textContent = "PremiumHub";
-        headerTitle.className = "header-premium";
-        headerIcon.innerHTML = '<i class="fas fa-crown" style="color: gold;"></i>';
-        headerIcon.className = "header-icon header-premium";
-    } else {
-        headerTitle.textContent = "LocalHub";
-        headerTitle.className = "header-local";
-        headerIcon.innerHTML = '<i class="fas fa-face-frown-open" style="color: #e50914;"></i>';
-        headerIcon.className = "header-icon header-local";
-    }
-}
-
-// Update user profile modal
-function updateUserProfileModal() {
-    const userModalBody = document.querySelector('.user-modal-content .user-modal-body');
-    const userPackageInfo = getUserPackageInfo(userPhoneNumber);
-    
-    let modalContent = '';
-    
-    if (isVerifiedUser && userPackageInfo && !isExpiredPremium) {
-        modalContent = `
-            <div class="user-icon-large user-icon-premium">
-                <i class="fas fa-crown" style="color: gold;"></i>
-            </div>
-            <div class="user-name">${userPackageInfo.name}</div>
-            <div class="user-phone">${userPhoneNumber}</div>
-            <div class="user-expiry">Expiry: ${formatDate(userPackageInfo.expiryDate)}</div>
-            <div class="user-features">TV Channel: ${userPackageInfo.tvChannel}</div>
-            <div class="user-features">Open Tools: ${userPackageInfo.openTools}</div>
-            <div class="premium-countdown"></div>
-        `;
-    } else if (isExpiredPremium) {
-        modalContent = `
-            <div class="user-icon-large user-icon-expired">
-                <i class="fas fa-smile" style="color: #FFD700;"></i>
-            </div>
-            <div class="user-name">${userPackageInfo.name}</div>
-            <div class="user-phone">${userPhoneNumber}</div>
-            <div class="user-expiry">Expiry: ${formatDate(userPackageInfo.expiryDate)}</div>
-            <div class="user-features">TV Channel: ${userPackageInfo.tvChannel}</div>
-            <div class="user-features">Open Tools: ${userPackageInfo.openTools}</div>
-            <div class="expired-message">
-                আপনার প্যাকেজের মেয়াদ শেষ
-            </div>
-            <a href="https://buypremium.com" target="_blank" class="local-premium-btn">Buy Premium</a>
-        `;
-    } else {
-        modalContent = `
-            <div class="user-icon-large user-icon-local">
-                <i class="fas fa-face-frown-open" style="color: #e50914;"></i>
-            </div>
-            <div class="user-name">Guest User</div>
-            <div class="user-phone">${userPhoneNumber}</div>
-            <div class="local-message">
-                আপনার অ্যাক্সেস সীমিত। সম্পূর্ণ অ্যাক্সেস পেতে প্রিমিয়াম প্যাকেজ কিনুন।
-            </div>
-            <a href="https://buypremium.com" target="_blank" class="local-premium-btn">Buy Premium</a>
-        `;
-    }
-    
-    userModalBody.innerHTML = modalContent;
-    
-    // Start countdown if premium user and not expired
-    if (isVerifiedUser && userPackageInfo && !isExpiredPremium) {
-        if (countdownInterval) {
-            clearInterval(countdownInterval);
-        }
-        countdownInterval = startCountdown(userPackageInfo.expiryDate);
-    }
-}
-
-// Login function
-function handleLogin() {
-    const phoneNumber = phoneNumberInput.value.trim();
-    
-    // Hide previous warnings
-    phoneWarning.style.display = 'none';
-    
-    if (!validatePhoneNumber(phoneNumber)) {
-        // Show warning message below input field
-        phoneWarning.style.display = 'block';
-        return;
-    }
-    
-    // Check if user is premium and if package has expired
-    userPhoneNumber = phoneNumber;
-    isVerifiedUser = isPremiumUser(phoneNumber);
-    isExpiredPremium = isPremiumExpired(phoneNumber);
-    
-    // Update header and profile
-    updateHeader();
-    updateUserProfileModal();
-    
-    // Hide login modal and show main content
-    loginModal.style.display = 'none';
-    document.querySelector('.header').style.display = 'flex';
-    document.querySelector('.container').style.display = 'flex';
-    document.querySelector('.saved-channels-section').style.display = 'flex';
-    
-    // Load channels
-    loadChannels();
-}
-
-// Show user profile modal
-function showUserProfile() {
-    updateUserProfileModal();
-    userModal.style.display = 'flex';
-}
-
-// Close user profile modal
-function closeUserProfile() {
-    userModal.style.display = 'none';
-}
-
-// Show premium warning modal
-function showPremiumWarning() {
-    premiumModal.style.display = 'flex';
-}
-
-// Close premium warning modal
-function closePremiumWarning() {
-    premiumModal.style.display = 'none';
-}
-
-// Show restricted modal
-function showRestrictedModal() {
-    restrictedModal.style.display = 'flex';
-}
-
-// Close restricted modal
-function closeRestrictedModal() {
-    restrictedModal.style.display = 'none';
-}
-
-// Show package modal
-function showPackageModal() {
-    packageModal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    
-    // Generate package cards
-    packageModalBody.innerHTML = '';
-    packages.forEach(pkg => {
-        const packageCard = document.createElement('div');
-        packageCard.className = 'package-card';
-        
-        const featuresHtml = pkg.features.map(feature => `
-            <div class="package-feature">
-                <i class="fas ${feature.included ? 'fa-check' : 'fa-times'}"></i>
-                <span>${feature.text}</span>
-            </div>
-        `).join('');
-        
-        packageCard.innerHTML = `
-            <div class="package-header">
-                <div class="package-name">${pkg.name}</div>
-                <div class="package-price">${pkg.price}</div>
-            </div>
-            <div class="package-features">
-                ${featuresHtml}
-            </div>
-            <div class="package-footer">
-                <a href="${pkg.contactUrl}" target="_blank" class="package-contact-btn">Contact Us</a>
-            </div>
-        `;
-        
-        packageModalBody.appendChild(packageCard);
     });
-    
-    history.pushState({packageModalOpen: true}, null, window.location.href);
 }
 
-// Close package modal
-function closePackageModalFunc() {
-    packageModal.style.display = 'none';
-    document.body.style.overflow = 'auto';
-    
-    if (history.state && history.state.packageModalOpen) {
-        history.back();
+// Function to check if user should see ads
+function shouldShowAds() {
+    // If user is not logged in, show ads
+    if (!currentUser) {
+        return true;
     }
+    
+    // If user is logged in but subscription is expired, show ads
+    const [day, month, year] = currentUser.expiryDate.split(':').map(Number);
+    const [hour, minute] = currentUser.expiryTime.split(':').map(Number);
+    const expiryDate = new Date(year, month - 1, day, hour, minute);
+    const now = new Date();
+    
+    return expiryDate <= now;
 }
 
-// Handle video playback for non-verified users and expired premium users
-function handleNonVerifiedVideoPlayback() {
-    if (!isVerifiedUser || isExpiredPremium) {
-        // Set timer to stop video after 10 seconds
-        videoStopTimer = setTimeout(() => {
-            closeVideoModal();
-            showPremiumWarning();
-        }, 10000);
+function updateWebsiteTitle() {
+    if (currentUser) {
+        // Check if subscription is active
+        const [day, month, year] = currentUser.expiryDate.split(':').map(Number);
+        const [hour, minute] = currentUser.expiryTime.split(':').map(Number);
+        const expiryDate = new Date(year, month - 1, day, hour, minute);
+        const now = new Date();
+        
+        if (expiryDate > now) {
+            headerTitle.innerHTML = '<i class="fas fa-crown"></i> PremiumHub';
+            document.getElementById('siteTitle').textContent = 'PremiumHub';
+        } else {
+            headerTitle.textContent = 'Demo';
+            document.getElementById('siteTitle').textContent = 'Demo';
+        }
+    } else {
+        headerTitle.textContent = 'Demo';
+        document.getElementById('siteTitle').textContent = 'Demo';
     }
 }
 
 function handleBrowserBackButton() {
-    if (videoModal.style.display === 'flex') {
+    if (videoModal.classList.contains('active')) {
         closeVideoModal();
-        history.pushState(null, null, window.location.href);
+    } else if (combinedModal.classList.contains('active')) {
+        closeCombinedModalFunc();
+    } else if (isCountryMenuOpen) {
+        toggleCountryMenu();
+    } else if (warningPopup.classList.contains('active')) {
+        closeWarningPopupFunc();
     }
 }
 
-function updateStats() {
-    totalActiveChannelsEl.textContent = `Active: ${activeChannels.length}`;
-}
-
-function saveChannel(channel) {
-    if (!savedChannels.some(c => c.id === channel.id)) {
-        savedChannels.push(channel);
-        localStorage.setItem('privateLiveSavedChannels', JSON.stringify(savedChannels));
-        updateFavoriteButtons();
-        return true;
+function toggleCountryMenu() {
+    isCountryMenuOpen = !isCountryMenuOpen;
+    if (isCountryMenuOpen) {
+        countryMenu.classList.add('active');
+        menuIcon.classList.add('active');
+        // Change icon to arrow down
+        menuIcon.querySelector('i').className = 'fas fa-arrow-down';
+    } else {
+        countryMenu.classList.remove('active');
+        menuIcon.classList.remove('active');
+        // Change icon to arrow up
+        menuIcon.querySelector('i').className = 'fas fa-arrow-up';
     }
-    return false;
 }
 
-function removeSavedChannel(channelId) {
-    savedChannels = savedChannels.filter(c => c.id !== channelId);
-    localStorage.setItem('privateLiveSavedChannels', JSON.stringify(savedChannels));
-    updateFavoriteButtons();
+function openCombinedModal(mode, country = null) {
+    currentModalMode = mode;
     
-    const channelCard = document.querySelector(`.saved-channel-card[data-channel-id="${channelId}"]`);
-    if (channelCard) {
-        channelCard.remove();
+    if (mode === 'country') {
+        combinedModalTitle.textContent = `${country} Entertainers`;
+        displayCountryEntertainers(country);
+    } else if (mode === 'tv') {
+        combinedModalTitle.textContent = 'TV Channels';
+        displayTVChannels();
+    } else if (mode === 'profile') {
+        combinedModalTitle.textContent = 'Profile';
+        displayProfile();
+    } else if (mode === 'pricing') {
+        combinedModalTitle.textContent = 'Pricing Plans';
+        displayPricing();
+    } else {
+        combinedModalTitle.textContent = 'Saved Entertainers';
+        displaySavedEntertainers();
     }
     
-    if (savedChannels.length === 0) {
-        showNoSavedChannelsMessage();
+    combinedModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeCombinedModalFunc() {
+    combinedModal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+    
+    // Clear countdown interval when modal closes
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
     }
 }
 
-function showNoSavedChannelsMessage() {
-    savedChannelsModalBody.innerHTML = '';
-    savedChannelsModalBody.appendChild(noSavedChannelsMessage);
-    noSavedChannelsMessage.style.display = 'block';
+function displayPricing() {
+    combinedModalBody.innerHTML = document.getElementById('pricingPlansTemplate').innerHTML;
 }
 
-function isChannelSaved(channelId) {
-    return savedChannels.some(c => c.id === channelId);
-}
-
-function updateFavoriteButtons() {
-    document.querySelectorAll('.favorite-btn').forEach(btn => {
-        const channelId = parseInt(btn.getAttribute('data-channel-id'));
-        if (isChannelSaved(channelId)) {
-            btn.classList.add('active');
-            btn.innerHTML = '<i class="fas fa-heart"></i>';
-        } else {
-            btn.classList.remove('active');
-            btn.innerHTML = '<i class="far fa-heart"></i>';
-        }
-    });
-}
-
-function handleModalFavoriteClick() {
-    if (currentVideoChannel) {
-        saveChannel(currentVideoChannel);
-        modalFavoriteBtn.classList.add('hiding');
-        setTimeout(() => {
-            modalFavoriteBtn.style.display = 'none';
-        }, 500);
+function displayTVChannels() {
+    combinedModalBody.innerHTML = '';
+    
+    if (tvChannels.length === 0) {
+        const tvEmptyState = document.createElement('div');
+        tvEmptyState.className = 'tv-empty-state';
+        tvEmptyState.innerHTML = `
+            <h3>No TV Channels Available</h3>
+            <p>There are no TV channels available at the moment.</p>
+        `;
+        combinedModalBody.appendChild(tvEmptyState);
+        return;
     }
-}
-
-// Display TV Channels
-function displayTvChannels() {
-    tvChannelsModalBody.innerHTML = '';
     
     const tvChannelsGrid = document.createElement('div');
     tvChannelsGrid.className = 'tv-channels-grid';
@@ -521,7 +212,7 @@ function displayTvChannels() {
         thumbnailImg.src = channel.thumbnail;
         thumbnailImg.alt = channel.name;
         thumbnailImg.onerror = function() {
-            this.src = 'https://via.placeholder.com/640x360/333333/FFFFFF?text=No+Thumbnail';
+            this.src = 'https://via.placeholder.com/640x360?text=No+Thumbnail';
         };
         
         const tvChannelName = document.createElement('div');
@@ -532,32 +223,39 @@ function displayTvChannels() {
         tvChannelCard.appendChild(tvChannelThumbnail);
         tvChannelCard.appendChild(tvChannelName);
         
-        tvChannelCard.addEventListener('click', () => {
-            openTvChannel(channel);
-        });
-        
+        tvChannelCard.addEventListener('click', () => openChannel(channel));
         tvChannelsGrid.appendChild(tvChannelCard);
     });
     
-    tvChannelsModalBody.appendChild(tvChannelsGrid);
+    combinedModalBody.appendChild(tvChannelsGrid);
 }
 
-// Open TV Channel
-function openTvChannel(channel) {
+function openChannel(channel) {
+    // Check if we should show ads
+    if (shouldShowAds()) {
+        // Show ad first
+        watchAd().then(() => {
+            // After ad is closed, open the channel
+            openChannelAfterAd(channel);
+        });
+    } else {
+        // Premium user, open directly
+        openChannelAfterAd(channel);
+    }
+}
+
+function openChannelAfterAd(channel) {
     modalTitle.textContent = channel.name;
     modalProfilePic.src = channel.thumbnail;
     modalProfilePic.onerror = function() {
         this.src = 'https://via.placeholder.com/300x300?text=Channel';
     };
     
-    modalFavoriteBtn.style.display = 'none';
+    modalFavoriteBtn.style.display = 'none'; // Hide favorite button for channels
     
-    currentVideoChannel = channel;
+    currentVideoEntertainer = channel;
     
-    videoModal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    
-    history.pushState({modalOpen: true}, null, window.location.href);
+    videoModal.classList.add('active');
 
     videoPlayer.style.width = '100%';
     videoPlayer.style.height = 'auto';
@@ -573,6 +271,9 @@ function openTvChannel(channel) {
     loadingMessage.appendChild(loadingSpinner);
     loadingMessage.appendChild(loadingText);
     loadingMessage.style.display = 'flex';
+    
+    // Check if user is premium and start countdown if not
+    checkPremiumStatusAndStartCountdown();
     
     if (Hls.isSupported()) {
         const hls = new Hls({
@@ -593,9 +294,6 @@ function openTvChannel(channel) {
                 loadingMessage.style.display = 'flex';
                 loadingText.textContent = 'Click to play';
             });
-            
-            // Handle non-verified user video playback
-            handleNonVerifiedVideoPlayback();
         });
         
         const resizeObserver = new ResizeObserver(() => {
@@ -635,9 +333,6 @@ function openTvChannel(channel) {
                 loadingMessage.style.display = 'flex';
                 loadingText.textContent = 'Click to play';
             });
-            
-            // Handle non-verified user video playback
-            handleNonVerifiedVideoPlayback();
         });
         
         videoPlayer.addEventListener('error', () => {
@@ -648,212 +343,257 @@ function openTvChannel(channel) {
     }
 }
 
-// Open TV Channels Modal
-function openTvChannelsModal() {
-    // Check if user has TV channel access
-    if (!isVerifiedUser || isExpiredPremium) {
-        showPremiumWarning();
+function displayCountryEntertainers(country) {
+    combinedModalBody.innerHTML = '';
+    
+    const countryActiveEntertainers = activeEntertainers.filter(entertainer => entertainer.country === country);
+    
+    if (countryActiveEntertainers.length === 0) {
+        const countryEmptyState = document.createElement('div');
+        countryEmptyState.className = 'combined-empty-state';
+        countryEmptyState.innerHTML = `
+            <h3>No Active Entertainers</h3>
+            <p>There are no active entertainers in ${country} at the moment.</p>
+        `;
+        combinedModalBody.appendChild(countryEmptyState);
         return;
     }
     
-    if (!hasTvChannelAccess(userPhoneNumber)) {
-        showRestrictedModal();
-        return;
-    }
+    const combinedEntertainersGrid = document.createElement('div');
+    combinedEntertainersGrid.className = 'combined-entertainers-grid';
     
-    tvChannelsModal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    displayTvChannels();
-    
-    history.pushState({tvModalOpen: true}, null, window.location.href);
-}
-
-// Close TV Channels Modal
-function closeTvChannelsModalFunc() {
-    tvChannelsModal.style.display = 'none';
-    document.body.style.overflow = 'auto';
-    
-    if (history.state && history.state.tvModalOpen) {
-        history.back();
-    }
-}
-
-// Event listeners for TV Channels
-tvIcon.addEventListener('click', openTvChannelsModal);
-closeTvChannelsModal.addEventListener('click', closeTvChannelsModalFunc);
-tvChannelsModal.addEventListener('click', (e) => {
-    if (e.target === tvChannelsModal) {
-        closeTvChannelsModalFunc();
-    }
-});
-
-// Display Tools
-function displayTools() {
-    toolsModalBody.innerHTML = '';
-    
-    const toolsGrid = document.createElement('div');
-    toolsGrid.className = 'tools-grid';
-    
-    tools.forEach(tool => {
-        const toolCard = document.createElement('a');
-        toolCard.className = 'tool-card';
-        toolCard.href = tool.url;
-        toolCard.target = '_blank';
+    countryActiveEntertainers.forEach(entertainer => {
+        const combinedEntertainerCard = document.createElement('div');
+        combinedEntertainerCard.className = 'combined-entertainer-card';
+        combinedEntertainerCard.setAttribute('data-entertainer-id', entertainer.id);
         
-        const toolIcon = document.createElement('div');
-        toolIcon.className = 'tool-icon';
-        toolIcon.innerHTML = `<i class="${tool.icon}"></i>`;
-        
-        const toolName = document.createElement('div');
-        toolName.className = 'tool-name';
-        toolName.textContent = tool.name;
-        
-        toolCard.appendChild(toolIcon);
-        toolCard.appendChild(toolName);
-        
-        toolsGrid.appendChild(toolCard);
-    });
-    
-    toolsModalBody.appendChild(toolsGrid);
-}
-
-// Open Tools Modal
-function openToolsModal() {
-    // Check if user has tools access
-    if (!isVerifiedUser || isExpiredPremium) {
-        showPremiumWarning();
-        return;
-    }
-    
-    if (!hasToolsAccess(userPhoneNumber)) {
-        showRestrictedModal();
-        return;
-    }
-    
-    toolsModal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    displayTools();
-    
-    history.pushState({toolsModalOpen: true}, null, window.location.href);
-}
-
-// Close Tools Modal
-function closeToolsModalFunc() {
-    toolsModal.style.display = 'none';
-    document.body.style.overflow = 'auto';
-    
-    if (history.state && history.state.toolsModalOpen) {
-        history.back();
-    }
-}
-
-// Event listeners for Tools
-toolsIcon.addEventListener('click', openToolsModal);
-closeToolsModal.addEventListener('click', closeToolsModalFunc);
-toolsModal.addEventListener('click', (e) => {
-    if (e.target === toolsModal) {
-        closeToolsModalFunc();
-    }
-});
-
-async function displaySavedChannels() {
-    savedChannelsModalBody.innerHTML = '';
-    
-    if (savedChannels.length === 0) {
-        showNoSavedChannelsMessage();
-        return;
-    }
-    
-    // Show checking status
-    savedChannelsModalBody.appendChild(checkingSavedChannelsStatus);
-    checkingSavedChannelsStatus.style.display = 'flex';
-    noSavedChannelsMessage.style.display = 'none';
-    
-    const onlineChannels = [];
-    const offlineChannels = [];
-    
-    const checkPromises = savedChannels.map(channel => checkStreamFast(channel));
-    const results = await Promise.allSettled(checkPromises);
-    
-    for (let i = 0; i < savedChannels.length; i++) {
-        const channel = savedChannels[i];
-        const result = results[i];
-        
-        if (result.status === 'fulfilled' && result.value) {
-            onlineChannels.push(channel);
-        } else {
-            offlineChannels.push(channel);
-        }
-    }
-    
-    checkingSavedChannelsStatus.style.display = 'none';
-    
-    const savedChannelsGrid = document.createElement('div');
-    savedChannelsGrid.className = 'saved-channels-grid';
-    
-    onlineChannels.forEach(channel => {
-        const savedChannelCard = document.createElement('div');
-        savedChannelCard.className = 'saved-channel-card';
-        savedChannelCard.setAttribute('data-channel-id', channel.id);
-        
-        const savedChannelThumbnail = document.createElement('div');
-        savedChannelThumbnail.className = 'saved-channel-thumbnail';
+        const combinedEntertainerThumbnail = document.createElement('div');
+        combinedEntertainerThumbnail.className = 'combined-entertainer-thumbnail';
         
         const thumbnailImg = document.createElement('img');
-        thumbnailImg.src = channel.thumbnail;
-        thumbnailImg.alt = channel.name;
+        thumbnailImg.src = entertainer.thumbnail;
+        thumbnailImg.alt = entertainer.name;
         thumbnailImg.onerror = function() {
             this.src = 'https://via.placeholder.com/300x300?text=No+Thumbnail';
         };
         
-        const savedChannelName = document.createElement('div');
-        savedChannelName.className = 'saved-channel-name';
-        savedChannelName.textContent = channel.name;
+        const combinedEntertainerName = document.createElement('div');
+        combinedEntertainerName.className = 'combined-entertainer-name';
+        combinedEntertainerName.textContent = entertainer.name;
         
-        const savedChannelLiveBadge = document.createElement('div');
-        savedChannelLiveBadge.className = 'saved-channel-live-badge';
-        savedChannelLiveBadge.textContent = 'ONLINE';
+        const combinedEntertainerLiveBadge = document.createElement('div');
+        combinedEntertainerLiveBadge.className = 'combined-entertainer-live-badge';
+        combinedEntertainerLiveBadge.textContent = 'ONLINE';
         
-        const savedChannelRemoveBtn = document.createElement('button');
-        savedChannelRemoveBtn.className = 'saved-channel-remove-btn';
-        savedChannelRemoveBtn.innerHTML = '<i class="fas fa-times"></i>';
-        savedChannelRemoveBtn.addEventListener('click', (e) => {
+        const favoriteBtn = document.createElement('button');
+        favoriteBtn.className = 'favorite-btn';
+        favoriteBtn.setAttribute('data-entertainer-id', entertainer.id);
+        favoriteBtn.innerHTML = isEntertainerSaved(entertainer.id) ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>';
+        if (isEntertainerSaved(entertainer.id)) {
+            favoriteBtn.classList.add('active');
+        }
+        
+        favoriteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            removeSavedChannel(channel.id);
+            if (isEntertainerSaved(entertainer.id)) {
+                removeSavedEntertainer(entertainer.id);
+            } else {
+                saveEntertainer(entertainer);
+            }
+            updateFavoriteButtons();
         });
         
-        savedChannelThumbnail.appendChild(thumbnailImg);
-        savedChannelThumbnail.appendChild(savedChannelName);
-        savedChannelThumbnail.appendChild(savedChannelLiveBadge);
-        savedChannelThumbnail.appendChild(savedChannelRemoveBtn);
-        savedChannelCard.appendChild(savedChannelThumbnail);
+        const thumbnailLoading = document.createElement('div');
+        thumbnailLoading.className = 'thumbnail-loading';
+        thumbnailLoading.style.display = entertainer.hasThumbnail ? 'none' : 'flex';
+        thumbnailLoading.innerHTML = `
+            <div class="spinner" style="width: 30px; height: 30px;"></div>
+        `;
         
-        savedChannelCard.addEventListener('click', () => {
-            openChannelFromSaved(channel);
-        });
+        combinedEntertainerThumbnail.appendChild(thumbnailImg);
+        combinedEntertainerThumbnail.appendChild(combinedEntertainerName);
+        combinedEntertainerThumbnail.appendChild(combinedEntertainerLiveBadge);
+        combinedEntertainerThumbnail.appendChild(favoriteBtn);
+        combinedEntertainerThumbnail.appendChild(thumbnailLoading);
+        combinedEntertainerCard.appendChild(combinedEntertainerThumbnail);
         
-        savedChannelsGrid.appendChild(savedChannelCard);
+        combinedEntertainerCard.addEventListener('click', () => openEntertainer(entertainer));
+        combinedEntertainersGrid.appendChild(combinedEntertainerCard);
     });
     
-    offlineChannels.forEach(channel => {
-        const savedChannelCard = document.createElement('div');
-        savedChannelCard.className = 'saved-channel-card offline-channel';
-        savedChannelCard.setAttribute('data-channel-id', channel.id);
+    combinedModalBody.appendChild(combinedEntertainersGrid);
+}
+
+function updateStats() {
+    totalActiveEntertainersEl.textContent = `Active: ${activeEntertainers.length}`;
+}
+
+function saveEntertainer(entertainer) {
+    if (!savedEntertainers.some(c => c.id === entertainer.id)) {
+        savedEntertainers.push(entertainer);
+        localStorage.setItem('privateLiveSavedEntertainers', JSON.stringify(savedEntertainers));
+        updateFavoriteButtons();
+        return true;
+    }
+    return false;
+}
+
+function removeSavedEntertainer(entertainerId) {
+    savedEntertainers = savedEntertainers.filter(c => c.id !== entertainerId);
+    localStorage.setItem('privateLiveSavedEntertainers', JSON.stringify(savedEntertainers));
+    updateFavoriteButtons();
+    
+    const entertainerCard = document.querySelector(`.combined-entertainer-card[data-entertainer-id="${entertainerId}"]`);
+    if (entertainerCard) {
+        entertainerCard.remove();
+    }
+    
+    if (savedEntertainers.length === 0 && currentModalMode === 'favorites') {
+        showNoEntertainersMessage();
+    }
+}
+
+function showNoEntertainersMessage() {
+    combinedModalBody.innerHTML = '';
+    const noEntertainersMessage = document.createElement('div');
+    noEntertainersMessage.className = 'no-entertainers-message';
+    noEntertainersMessage.innerHTML = `
+        <i class="fas fa-heart-broken broken-heart"></i>
+        <h3>No Saved Entertainers</h3>
+        <p>You haven't saved any entertainers yet.</p>
+    `;
+    combinedModalBody.appendChild(noEntertainersMessage);
+}
+
+function isEntertainerSaved(entertainerId) {
+    return savedEntertainers.some(c => c.id === entertainerId);
+}
+
+function updateFavoriteButtons() {
+    document.querySelectorAll('.favorite-btn').forEach(btn => {
+        const entertainerId = parseInt(btn.getAttribute('data-entertainer-id'));
+        if (isEntertainerSaved(entertainerId)) {
+            btn.classList.add('active');
+            btn.innerHTML = '<i class="fas fa-heart"></i>';
+        } else {
+            btn.classList.remove('active');
+            btn.innerHTML = '<i class="far fa-heart"></i>';
+        }
+    });
+}
+
+function handleModalFavoriteClick() {
+    if (currentVideoEntertainer) {
+        saveEntertainer(currentVideoEntertainer);
+        modalFavoriteBtn.classList.add('hiding');
+        setTimeout(() => {
+            modalFavoriteBtn.style.display = 'none';
+        }, 500);
+    }
+}
+
+async function displaySavedEntertainers() {
+    combinedModalBody.innerHTML = '';
+    
+    if (savedEntertainers.length === 0) {
+        showNoEntertainersMessage();
+        return;
+    }
+    
+    // Show checking status
+    const checkingStatus = document.createElement('div');
+    checkingStatus.className = 'checking-status';
+    checkingStatus.innerHTML = `
+        <div class="spinner"></div>
+        Checking saved entertainers status...
+    `;
+    combinedModalBody.appendChild(checkingStatus);
+    
+    const onlineEntertainers = [];
+    const offlineEntertainers = [];
+    
+    const checkPromises = savedEntertainers.map(entertainer => checkStreamFast(entertainer));
+    const results = await Promise.allSettled(checkPromises);
+    
+    for (let i = 0; i < savedEntertainers.length; i++) {
+        const entertainer = savedEntertainers[i];
+        const result = results[i];
         
-        const savedChannelThumbnail = document.createElement('div');
-        savedChannelThumbnail.className = 'saved-channel-thumbnail';
+        if (result.status === 'fulfilled' && result.value) {
+            onlineEntertainers.push(entertainer);
+        } else {
+            offlineEntertainers.push(entertainer);
+        }
+    }
+    
+    checkingStatus.style.display = 'none';
+    
+    const combinedEntertainersGrid = document.createElement('div');
+    combinedEntertainersGrid.className = 'combined-entertainers-grid';
+    
+    onlineEntertainers.forEach(entertainer => {
+        const combinedEntertainerCard = document.createElement('div');
+        combinedEntertainerCard.className = 'combined-entertainer-card';
+        combinedEntertainerCard.setAttribute('data-entertainer-id', entertainer.id);
+        
+        const combinedEntertainerThumbnail = document.createElement('div');
+        combinedEntertainerThumbnail.className = 'combined-entertainer-thumbnail';
         
         const thumbnailImg = document.createElement('img');
-        thumbnailImg.src = channel.thumbnail;
-        thumbnailImg.alt = channel.name;
+        thumbnailImg.src = entertainer.thumbnail;
+        thumbnailImg.alt = entertainer.name;
+        thumbnailImg.onerror = function() {
+            this.src = 'https://via.placeholder.com/300x300?text=No+Thumbnail';
+        };
+        
+        const combinedEntertainerName = document.createElement('div');
+        combinedEntertainerName.className = 'combined-entertainer-name';
+        combinedEntertainerName.textContent = entertainer.name;
+        
+        const combinedEntertainerLiveBadge = document.createElement('div');
+        combinedEntertainerLiveBadge.className = 'combined-entertainer-live-badge';
+        combinedEntertainerLiveBadge.textContent = 'ONLINE';
+        
+        const combinedRemoveBtn = document.createElement('button');
+        combinedRemoveBtn.className = 'combined-remove-btn';
+        combinedRemoveBtn.innerHTML = '<i class="fas fa-times"></i>';
+        combinedRemoveBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            removeSavedEntertainer(entertainer.id);
+        });
+        
+        combinedEntertainerThumbnail.appendChild(thumbnailImg);
+        combinedEntertainerThumbnail.appendChild(combinedEntertainerName);
+        combinedEntertainerThumbnail.appendChild(combinedEntertainerLiveBadge);
+        combinedEntertainerThumbnail.appendChild(combinedRemoveBtn);
+        combinedEntertainerCard.appendChild(combinedEntertainerThumbnail);
+        
+        combinedEntertainerCard.addEventListener('click', () => {
+            openEntertainerFromSaved(entertainer);
+        });
+        
+        combinedEntertainersGrid.appendChild(combinedEntertainerCard);
+    });
+    
+    offlineEntertainers.forEach(entertainer => {
+        const combinedEntertainerCard = document.createElement('div');
+        combinedEntertainerCard.className = 'combined-entertainer-card offline-entertainer';
+        combinedEntertainerCard.setAttribute('data-entertainer-id', entertainer.id);
+        
+        const combinedEntertainerThumbnail = document.createElement('div');
+        combinedEntertainerThumbnail.className = 'combined-entertainer-thumbnail';
+        
+        const thumbnailImg = document.createElement('img');
+        thumbnailImg.src = entertainer.thumbnail;
+        thumbnailImg.alt = entertainer.name;
         thumbnailImg.style.filter = 'grayscale(100%) brightness(0.5)';
         thumbnailImg.onerror = function() {
             this.src = 'https://via.placeholder.com/300x300?text=No+Thumbnail';
         };
         
-        const savedChannelName = document.createElement('div');
-        savedChannelName.className = 'saved-channel-name';
-        savedChannelName.textContent = channel.name;
+        const combinedEntertainerName = document.createElement('div');
+        combinedEntertainerName.className = 'combined-entertainer-name';
+        combinedEntertainerName.textContent = entertainer.name;
         
         const offlineOverlay = document.createElement('div');
         offlineOverlay.className = 'offline-overlay';
@@ -862,368 +602,79 @@ async function displaySavedChannels() {
         offlineText.className = 'offline-text';
         offlineText.textContent = 'Offline';
         
-        const savedChannelRemoveBtn = document.createElement('button');
-        savedChannelRemoveBtn.className = 'saved-channel-remove-btn';
-        savedChannelRemoveBtn.innerHTML = '<i class="fas fa-times"></i>';
-        savedChannelRemoveBtn.addEventListener('click', (e) => {
+        const combinedRemoveBtn = document.createElement('button');
+        combinedRemoveBtn.className = 'combined-remove-btn';
+        combinedRemoveBtn.innerHTML = '<i class="fas fa-times"></i>';
+        combinedRemoveBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            removeSavedChannel(channel.id);
+            removeSavedEntertainer(entertainer.id);
         });
         
         offlineOverlay.appendChild(offlineText);
-        savedChannelThumbnail.appendChild(thumbnailImg);
-        savedChannelThumbnail.appendChild(savedChannelName);
-        savedChannelThumbnail.appendChild(offlineOverlay);
-        savedChannelThumbnail.appendChild(savedChannelRemoveBtn);
-        savedChannelCard.appendChild(savedChannelThumbnail);
+        combinedEntertainerThumbnail.appendChild(thumbnailImg);
+        combinedEntertainerThumbnail.appendChild(combinedEntertainerName);
+        combinedEntertainerThumbnail.appendChild(offlineOverlay);
+        combinedEntertainerThumbnail.appendChild(combinedRemoveBtn);
+        combinedEntertainerCard.appendChild(combinedEntertainerThumbnail);
         
-        savedChannelCard.style.cursor = 'not-allowed';
+        combinedEntertainerCard.style.cursor = 'not-allowed';
         
-        savedChannelsGrid.appendChild(savedChannelCard);
+        combinedEntertainersGrid.appendChild(combinedEntertainerCard);
     });
     
-    savedChannelsModalBody.appendChild(savedChannelsGrid);
-}
-
-async function checkStreamFast(channel) {
-    return new Promise((resolve) => {
-        if (!Hls.isSupported()) {
-            const video = document.createElement('video');
-            video.src = channel.m3u8Url;
-            video.addEventListener('error', () => resolve(false));
-            video.addEventListener('loadedmetadata', () => {
-                resolve(true);
-                video.remove();
-            });
-            return;
-        }
-        
-        const hls = new Hls({
-            maxMaxBufferLength: 5,
-            maxBufferSize: 1000000,
-            maxBufferLength: 5,
-            lowLatencyMode: false,
-            enableWorker: false
-        });
-        
-        let timeout = setTimeout(() => {
-            hls.destroy();
-            resolve(false);
-        }, 3000);
-        
-        hls.loadSource(channel.m3u8Url);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            clearTimeout(timeout);
-            hls.destroy();
-            resolve(true);
-        });
-        
-        hls.on(Hls.Events.ERROR, () => {
-            clearTimeout(timeout);
-            hls.destroy();
-            resolve(false);
-        });
-    });
-}
-
-function openSavedChannelsModal() {
-    savedChannelsModal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    displaySavedChannels();
-    
-    history.pushState({savedModalOpen: true}, null, window.location.href);
-}
-
-function closeSavedChannelsModalFunc() {
-    savedChannelsModal.style.display = 'none';
-    document.body.style.overflow = 'auto';
-    
-    if (history.state && history.state.savedModalOpen) {
-        history.back();
-    }
-}
-
-function openChannelFromSaved(channel) {
-    modalTitle.textContent = channel.name;
-    modalProfilePic.src = channel.thumbnail;
-    modalProfilePic.onerror = function() {
-        this.src = 'https://via.placeholder.com/300x300?text=Channel';
-    };
-    
-    modalFavoriteBtn.style.display = 'flex';
-    modalFavoriteBtn.classList.remove('hiding');
-    
-    if (isChannelSaved(channel.id)) {
-        modalFavoriteBtn.style.display = 'none';
-    }
-    
-    currentVideoChannel = channel;
-    
-    videoModal.style.display = 'flex';
-    
-    videoModal.style.zIndex = '1001';
-    
-    videoPlayer.style.width = '100%';
-    videoPlayer.style.height = 'auto';
-    videoPlayer.style.display = 'none';
-    
-    const loadingSpinner = document.createElement('div');
-    loadingSpinner.className = 'spinner';
-    
-    const loadingText = document.createElement('div');
-    loadingText.textContent = 'Loading ...';
-    
-    loadingMessage.innerHTML = '';
-    loadingMessage.appendChild(loadingSpinner);
-    loadingMessage.appendChild(loadingText);
-    loadingMessage.style.display = 'flex';
-    
-    if (Hls.isSupported()) {
-        const hls = new Hls({
-            maxMaxBufferLength: 30,
-            maxBufferSize: 6000000,
-            maxBufferLength: 30,
-            enableWorker: true
-        });
-        
-        hls.loadSource(channel.m3u8Url);
-        hls.attachMedia(videoPlayer);
-        
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            loadingMessage.style.display = 'none';
-            videoPlayer.style.display = 'block';
-            videoPlayer.play().catch(e => {
-                console.error('Autoplay failed:', e);
-                loadingMessage.style.display = 'flex';
-                loadingText.textContent = 'Click to play';
-            });
-            
-            // Handle non-verified user video playback
-            handleNonVerifiedVideoPlayback();
-        });
-        
-        const resizeObserver = new ResizeObserver(() => {
-            const aspectRatio = videoPlayer.videoWidth / videoPlayer.videoHeight;
-            videoPlayer.style.width = aspectRatio > 1 ? '100%' : 'auto';
-            videoPlayer.style.height = aspectRatio > 1 ? 'auto' : '100%';
-        });
-        resizeObserver.observe(videoPlayer);
-        
-        hls.on(Hls.Events.ERROR, (event, data) => {
-            console.error('HLS error:', data);
-            if (data.fatal) {
-                switch(data.type) {
-                    case Hls.ErrorTypes.NETWORK_ERROR:
-                        loadingText.textContent = 'Offline ...';
-                        break;
-                    case Hls.ErrorTypes.MEDIA_ERROR:
-                        loadingText.textContent = 'Live Error';
-                        hls.recoverMediaError();
-                        break;
-                    default:
-                        loadingText.textContent = 'Error, Please try again';
-                        break;
-                }
-            }
-        });
-        
-        videoPlayer._hls = hls;
-        videoPlayer._resizeObserver = resizeObserver;
-    } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
-        videoPlayer.src = channel.m3u8Url;
-        videoPlayer.addEventListener('loadedmetadata', () => {
-            loadingMessage.style.display = 'none';
-            videoPlayer.style.display = 'block';
-            videoPlayer.play().catch(e => {
-                console.error('Autoplay failed:', e);
-                loadingMessage.style.display = 'flex';
-                loadingText.textContent = 'Click to play';
-            });
-            
-            // Handle non-verified user video playback
-            handleNonVerifiedVideoPlayback();
-        });
-        
-        videoPlayer.addEventListener('error', () => {
-            loadingText.textContent = 'Error, Please try again';
-        });
-    } else {
-        loadingText.textContent = 'Please try another browser';
-    }
-}
-
-function captureThumbnail(videoElement, channelId) {
-    return new Promise((resolve) => {
-        try {
-            if (!videoElement || videoElement.readyState < 2) {
-                console.log(`Video not ready for channel ${channelId}, retrying...`);
-                setTimeout(() => captureThumbnail(videoElement, channelId).then(resolve), 1000);
-                return;
-            }
-            
-            thumbnailCanvas.width = videoElement.videoWidth || 300;
-            thumbnailCanvas.height = videoElement.videoHeight || 300;
-            
-            thumbnailCtx.drawImage(videoElement, 0, 0, thumbnailCanvas.width, thumbnailCanvas.height);
-            
-            const dataUrl = thumbnailCanvas.toDataURL('image/jpeg', 0.7);
-            
-            const channel = channels.find(c => c.id === channelId);
-            if (channel) {
-                channel.hasThumbnail = true;
-                channel.thumbnail = dataUrl;
-            }
-            
-            document.querySelectorAll(`.channel-card[data-channel-id="${channelId}"] .channel-thumbnail img`).forEach(img => {
-                img.style.opacity = 0;
-                setTimeout(() => {
-                    img.src = dataUrl;
-                    img.style.opacity = 1;
-                    
-                    const loadingElement = document.querySelector(`.channel-card[data-channel-id="${channelId}"] .thumbnail-loading`);
-                    if (loadingElement) {
-                        loadingElement.style.display = 'none';
-                    }
-                }, 100);
-            });
-            
-            resolve(true);
-        } catch (error) {
-            console.error('Error capturing thumbnail:', error);
-            resolve(false);
-        }
-    });
-}
-
-function startThumbnailUpdates(channel) {
-    if (!channel.videoElement || channel.hasThumbnail) return;
-    
-    const loadingElement = document.querySelector(`.channel-card[data-channel-id="${channel.id}"] .thumbnail-loading`);
-    if (loadingElement) {
-        loadingElement.style.display = 'flex';
-    }
-    
-    const checkVideoReady = () => {
-        if (channel.videoElement && channel.videoElement.readyState >= 2) {
-            captureThumbnail(channel.videoElement, channel.id).then(success => {
-                if (success) {
-                    console.log(`Thumbnail captured for channel ${channel.id}`);
-                    stopThumbnailUpdates(channel);
-                    currentThumbnailLoads--;
-                    processThumbnailQueue();
-                } else {
-                    console.log(`Failed to capture thumbnail for channel ${channel.id}, retrying...`);
-                    setTimeout(checkVideoReady, 2000);
-                }
-            });
-        } else {
-            setTimeout(checkVideoReady, 1000);
-        }
-    };
-    
-    checkVideoReady();
-}
-
-function stopThumbnailUpdates(channel) {
-    if (channel.thumbnailUpdateInterval) {
-        clearInterval(channel.thumbnailUpdateInterval);
-        channel.thumbnailUpdateInterval = null;
-    }
-    if (channel.videoElement) {
-        channel.videoElement.pause();
-        channel.videoElement.removeAttribute('src');
-        channel.videoElement.load();
-        channel.videoElement = null;
-    }
-    if (channel._hls) {
-        channel._hls.destroy();
-        channel._hls = null;
-    }
-}
-
-async function checkStream(channel) {
-    return new Promise((resolve) => {
-        if (!Hls.isSupported()) {
-            const video = document.createElement('video');
-            video.src = channel.m3u8Url;
-            video.addEventListener('error', () => resolve(false));
-            video.addEventListener('loadedmetadata', () => {
-                resolve(true);
-                video.remove();
-            });
-            return;
-        }
-        
-        const hls = new Hls({
-            maxMaxBufferLength: 5,
-            maxBufferSize: 1000000,
-            maxBufferLength: 5,
-            lowLatencyMode: false,
-            enableWorker: false
-        });
-        
-        let timeout = setTimeout(() => {
-            hls.destroy();
-            resolve(false);
-        }, 8000);
-        
-        hls.loadSource(channel.m3u8Url);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            clearTimeout(timeout);
-            hls.destroy();
-            resolve(true);
-        });
-        
-        hls.on(Hls.Events.ERROR, () => {
-            clearTimeout(timeout);
-            hls.destroy();
-            resolve(false);
-        });
-    });
+    combinedModalBody.appendChild(combinedEntertainersGrid);
 }
 
 function getNextBatch() {
-    const uncheckedChannels = channels.filter(channel => !checkedChannels.has(channel.id));
+    const uncheckedEntertainers = entertainers.filter(entertainer => !checkedEntertainers.has(entertainer.id));
     
-    // র‍্যান্ডমভাবে চ্যানেল শাফল করি
-    const shuffledChannels = shuffleArray([...uncheckedChannels]);
+    // র‍্যান্ডমভাবে entertainer শাফল করি
+    const shuffledEntertainers = shuffleArray([...uncheckedEntertainers]);
     
-    return shuffledChannels.slice(0, batchSize);
+    return shuffledEntertainers.slice(0, batchSize);
 }
 
-async function checkBatch(batchChannels) {
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+async function checkBatch(batchEntertainers) {
     const checkPromises = [];
-    const newActiveChannels = [];
+    const newActiveEntertainers = [];
     
-    for (const channel of batchChannels) {
+    for (const entertainer of batchEntertainers) {
         checkPromises.push(
-            checkStream(channel)
+            checkStream(entertainer)
                 .then(isActive => {
                     if (isActive) {
-                        newActiveChannels.push(channel);
+                        newActiveEntertainers.push(entertainer);
                     }
-                    checkedChannels.add(channel.id);
+                    checkedEntertainers.add(entertainer.id);
                 })
                 .catch(() => {
-                    checkedChannels.add(channel.id);
+                    checkedEntertainers.add(entertainer.id);
                 })
         );
     }
     
     await Promise.all(checkPromises);
     
-    activeChannels = [...activeChannels, ...newActiveChannels];
+    activeEntertainers = [...activeEntertainers, ...newActiveEntertainers];
     
-    // প্রথম লোডে একটিভ চ্যানেলগুলোও র‍্যান্ডমভাবে শাফল করি
+    // প্রথম লোডে একটিভ entertainerগুলোও র‍্যান্ডমভাবে শাফল করি
     if (isFirstLoad) {
-        shuffleArray(activeChannels);
+        shuffleArray(activeEntertainers);
         isFirstLoad = false;
     }
     
-    displayedChannels = activeChannels.slice(0, channelsPerPage * currentPage);
-    displayChannels();
+    displayedEntertainers = activeEntertainers.slice(0, entertainersPerPage * currentPage);
+    displayEntertainers();
     updateStats();
-    loadThumbnailsForVisibleChannels();
+    loadThumbnailsForVisibleEntertainers();
 }
 
 function startBatchChecking() {
@@ -1243,7 +694,7 @@ function startBatchChecking() {
         } else {
             clearInterval(batchIntervalId);
             batchIntervalId = null;
-            console.log('All channels have been checked');
+            console.log('All entertainers have been checked');
             
             startAutoRecheck();
         }
@@ -1256,70 +707,72 @@ function startAutoRecheck() {
     }
     
     autoRecheckIntervalId = setInterval(() => {
-        console.log('Auto-rechecking all channels...');
-        recheckAllChannels();
+        console.log('Auto-rechecking all entertainers...');
+        recheckAllEntertainers();
     }, autoRecheckInterval);
 }
 
-async function recheckAllChannels() {
-    console.log('Re-checking all channels...');
+async function recheckAllEntertainers() {
+    console.log('Re-checking all entertainers...');
     
-    const recheckPromises = channels.map(async (channel) => {
-        const isStillActive = await checkStream(channel);
-        return { channel, isStillActive };
+    const recheckPromises = entertainers.map(async (entertainer) => {
+        try {
+            const isStillActive = await checkStream(entertainer);
+            return { entertainer, isStillActive };
+        } catch (error) {
+            return { entertainer, isStillActive: false };
+        }
     });
     
     const results = await Promise.all(recheckPromises);
     
-    const stillActiveChannels = [];
-    const removedChannels = [];
+    const stillActiveEntertainers = [];
     
     for (const result of results) {
         if (result.isStillActive) {
-            stillActiveChannels.push(result.channel);
+            stillActiveEntertainers.push(result.entertainer);
         } else {
-            removedChannels.push(result.channel);
-            stopThumbnailUpdates(result.channel);
+            stopThumbnailUpdates(result.entertainer);
         }
     }
     
-    activeChannels = stillActiveChannels;
+    activeEntertainers = stillActiveEntertainers;
     
-    displayedChannels = activeChannels.slice(0, channelsPerPage * currentPage);
+    displayedEntertainers = activeEntertainers.slice(0, entertainersPerPage * currentPage);
     
-    console.log(`Re-check completed. Removed ${removedChannels.length} offline channels. Total active: ${activeChannels.length}`);
+    console.log(`Re-check completed. Total active: ${activeEntertainers.length}`);
     
-    displayChannels();
+    displayEntertainers();
     updateStats();
     
-    loadThumbnailsForVisibleChannels();
+    loadThumbnailsForVisibleEntertainers();
 }
 
-async function loadChannels() {
+async function loadEntertainers() {
     const statusChecking = document.querySelector('.status-checking');
     if (statusChecking) {
         statusChecking.style.display = 'flex';
     }
     
-    channelContainer.innerHTML = '';
-    channelContainer.appendChild(statusChecking);
+    entertainerContainer.innerHTML = '';
+    entertainerContainer.appendChild(statusChecking);
     
-    activeChannels.forEach(channel => {
-        if (!channel.hasThumbnail) {
-            stopThumbnailUpdates(channel);
+    activeEntertainers.forEach(entertainer => {
+        if (!entertainer.hasThumbnail) {
+            stopThumbnailUpdates(entertainer);
         }
     });
     
     if (!isInitialLoad) {
-        activeChannels = [];
-        displayedChannels = [];
-        checkedChannels.clear();
+        activeEntertainers = [];
+        displayedEntertainers = [];
+        checkedEntertainers.clear();
         currentPage = 1;
         thumbnailQueue = [];
         currentThumbnailLoads = 0;
         
-        channels.forEach(channel => {
-            channel.hasThumbnail = false;
+        entertainers.forEach(entertainer => {
+            entertainer.hasThumbnail = false;
         });
     }
     
@@ -1327,35 +780,35 @@ async function loadChannels() {
     isInitialLoad = false;
 }
 
-function displayChannels() {
-    channelContainer.innerHTML = '';
+function displayEntertainers() {
+    entertainerContainer.innerHTML = '';
     
-    if (displayedChannels.length === 0) {
-        channelContainer.appendChild(emptyStateMessage);
-        emptyStateMessage.style.display = 'block';
+    if (displayedEntertainers.length === 0) {
+        entertainerContainer.appendChild(emptyStateMessage);
+        emptyStateMessage.style.display = 'flex';
         return;
     } else {
         emptyStateMessage.style.display = 'none';
     }
 
-    for (const channel of displayedChannels) {
-        const channelCard = document.createElement('div');
-        channelCard.className = 'channel-card';
-        channelCard.setAttribute('data-channel-id', channel.id);
+    for (const entertainer of displayedEntertainers) {
+        const entertainerCard = document.createElement('div');
+        entertainerCard.className = 'entertainer-card';
+        entertainerCard.setAttribute('data-entertainer-id', entertainer.id);
         
-        const channelThumbnail = document.createElement('div');
-        channelThumbnail.className = 'channel-thumbnail';
+        const entertainerThumbnail = document.createElement('div');
+        entertainerThumbnail.className = 'entertainer-thumbnail';
         
         const thumbnailImg = document.createElement('img');
-        thumbnailImg.src = channel.thumbnail;
-        thumbnailImg.alt = channel.name;
+        thumbnailImg.src = entertainer.thumbnail;
+        thumbnailImg.alt = entertainer.name;
         thumbnailImg.onerror = function() {
             this.src = 'https://via.placeholder.com/300x300?text=No+Thumbnail';
         };
         
-        const channelName = document.createElement('div');
-        channelName.className = 'channel-name';
-        channelName.textContent = channel.name;
+        const entertainerName = document.createElement('div');
+        entertainerName.className = 'entertainer-name';
+        entertainerName.textContent = entertainer.name;
         
         const liveBadge = document.createElement('div');
         liveBadge.className = 'live-badge';
@@ -1363,55 +816,55 @@ function displayChannels() {
         
         const favoriteBtn = document.createElement('button');
         favoriteBtn.className = 'favorite-btn';
-        favoriteBtn.setAttribute('data-channel-id', channel.id);
-        favoriteBtn.innerHTML = isChannelSaved(channel.id) ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>';
-        if (isChannelSaved(channel.id)) {
+        favoriteBtn.setAttribute('data-entertainer-id', entertainer.id);
+        favoriteBtn.innerHTML = isEntertainerSaved(entertainer.id) ? '<i class="fas fa-heart"></i>' : '<i class="far fa-heart"></i>';
+        if (isEntertainerSaved(entertainer.id)) {
             favoriteBtn.classList.add('active');
         }
         
         favoriteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (isChannelSaved(channel.id)) {
-                removeSavedChannel(channel.id);
+            if (isEntertainerSaved(entertainer.id)) {
+                removeSavedEntertainer(entertainer.id);
             } else {
-                saveChannel(channel);
+                saveEntertainer(entertainer);
             }
             updateFavoriteButtons();
         });
         
         const thumbnailLoading = document.createElement('div');
         thumbnailLoading.className = 'thumbnail-loading';
-        thumbnailLoading.style.display = channel.hasThumbnail ? 'none' : 'flex';
+        thumbnailLoading.style.display = entertainer.hasThumbnail ? 'none' : 'flex';
         thumbnailLoading.innerHTML = `
             <div class="spinner" style="width: 30px; height: 30px;"></div>
         `;
         
-        channelThumbnail.appendChild(thumbnailImg);
-        channelThumbnail.appendChild(channelName);
-        channelThumbnail.appendChild(liveBadge);
-        channelThumbnail.appendChild(favoriteBtn);
-        channelThumbnail.appendChild(thumbnailLoading);
-        channelCard.appendChild(channelThumbnail);
+        entertainerThumbnail.appendChild(thumbnailImg);
+        entertainerThumbnail.appendChild(entertainerName);
+        entertainerThumbnail.appendChild(liveBadge);
+        entertainerThumbnail.appendChild(favoriteBtn);
+        entertainerThumbnail.appendChild(thumbnailLoading);
+        entertainerCard.appendChild(entertainerThumbnail);
         
-        channelCard.addEventListener('click', () => openChannel(channel));
-        channelContainer.appendChild(channelCard);
+        entertainerCard.addEventListener('click', () => openEntertainer(entertainer));
+        entertainerContainer.appendChild(entertainerCard);
     }
     
-    if (activeChannels.length > displayedChannels.length) {
+    if (activeEntertainers.length > displayedEntertainers.length) {
         const loadMoreContainer = document.createElement('div');
         loadMoreContainer.className = 'load-more-container';
         
         const loadMoreBtn = document.createElement('button');
         loadMoreBtn.className = 'load-more-btn';
         loadMoreBtn.textContent = 'More';
-        loadMoreBtn.addEventListener('click', loadMoreChannels);
+        loadMoreBtn.addEventListener('click', loadMoreEntertainers);
         
         loadMoreContainer.appendChild(loadMoreBtn);
-        channelContainer.appendChild(loadMoreContainer);
+        entertainerContainer.appendChild(loadMoreContainer);
     }
 }
 
-async function loadMoreChannels() {
+async function loadMoreEntertainers() {
     const loadMoreBtn = document.querySelector('.load-more-btn');
     if (loadMoreBtn) {
         loadMoreBtn.disabled = true;
@@ -1420,15 +873,15 @@ async function loadMoreChannels() {
     
     currentPage++;
     
-    const nextPageChannels = activeChannels.slice(displayedChannels.length, channelsPerPage * currentPage);
-    displayedChannels = [...displayedChannels, ...nextPageChannels];
+    const nextPageEntertainers = activeEntertainers.slice(displayedEntertainers.length, entertainersPerPage * currentPage);
+    displayedEntertainers = [...displayedEntertainers, ...nextPageEntertainers];
     
-    displayChannels();
+    displayEntertainers();
     updateStats();
     
-    loadThumbnailsForNewChannels();
+    loadThumbnailsForNewEntertainers();
     
-    if (activeChannels.length > displayedChannels.length) {
+    if (activeEntertainers.length > displayedEntertainers.length) {
         if (loadMoreBtn) {
             loadMoreBtn.disabled = false;
             loadMoreBtn.textContent = 'More';
@@ -1441,24 +894,24 @@ async function loadMoreChannels() {
     }
 }
 
-function loadThumbnailsForVisibleChannels() {
-    const channelsToLoad = displayedChannels.filter(channel => !channel.hasThumbnail && !channel.isThumbnailLoading);
+function loadThumbnailsForVisibleEntertainers() {
+    const entertainersToLoad = displayedEntertainers.filter(entertainer => !entertainer.hasThumbnail && !entertainer.isThumbnailLoading);
     
-    for (const channel of channelsToLoad) {
-        thumbnailQueue.push(channel);
+    for (const entertainer of entertainersToLoad) {
+        thumbnailQueue.push(entertainer);
     }
     
     processThumbnailQueue();
 }
 
-function loadThumbnailsForNewChannels() {
-    const startIndex = channelsPerPage * (currentPage - 1);
-    const endIndex = channelsPerPage * currentPage;
-    const newChannels = displayedChannels.slice(startIndex, endIndex);
+function loadThumbnailsForNewEntertainers() {
+    const startIndex = entertainersPerPage * (currentPage - 1);
+    const endIndex = entertainersPerPage * currentPage;
+    const newEntertainers = displayedEntertainers.slice(startIndex, endIndex);
     
-    for (const channel of newChannels) {
-        if (!channel.hasThumbnail && !channel.isThumbnailLoading) {
-            thumbnailQueue.push(channel);
+    for (const entertainer of newEntertainers) {
+        if (!entertainer.hasThumbnail && !entertainer.isThumbnailLoading) {
+            thumbnailQueue.push(entertainer);
         }
     }
     
@@ -1474,10 +927,10 @@ function processThumbnailQueue() {
         return;
     }
     
-    const channel = thumbnailQueue.shift();
-    if (channel && !channel.hasThumbnail && !channel.isThumbnailLoading) {
+    const entertainer = thumbnailQueue.shift();
+    if (entertainer && !entertainer.hasThumbnail && !entertainer.isThumbnailLoading) {
         currentThumbnailLoads++;
-        channel.isThumbnailLoading = true;
+        entertainer.isThumbnailLoading = true;
         
         const videoElement = document.createElement('video');
         videoElement.muted = true;
@@ -1492,20 +945,20 @@ function processThumbnailQueue() {
                 maxBufferLength: 5,
                 enableWorker: false
             });
-            hls.loadSource(channel.m3u8Url);
+            hls.loadSource(entertainer.m3u8Url);
             hls.attachMedia(videoElement);
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
                 videoElement.play().catch(e => console.error('Autoplay failed:', e));
-                channel.videoElement = videoElement;
-                channel._hls = hls;
-                startThumbnailUpdates(channel);
+                entertainer.videoElement = videoElement;
+                entertainer._hls = hls;
+                startThumbnailUpdates(entertainer);
             });
         } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
-            videoElement.src = channel.m3u8Url;
+            videoElement.src = entertainer.m3u8Url;
             videoElement.addEventListener('loadedmetadata', () => {
                 videoElement.play().catch(e => console.error('Autoplay failed:', e));
-                channel.videoElement = videoElement;
-                startThumbnailUpdates(channel);
+                entertainer.videoElement = videoElement;
+                startThumbnailUpdates(entertainer);
             });
         }
     }
@@ -1515,26 +968,37 @@ function processThumbnailQueue() {
     }
 }
 
-function openChannel(channel) {
-    modalTitle.textContent = channel.name;
-    modalProfilePic.src = channel.thumbnail;
+function openEntertainer(entertainer) {
+    // Check if we should show ads
+    if (shouldShowAds()) {
+        // Show ad first
+        watchAd().then(() => {
+            // After ad is closed, open the entertainer
+            openEntertainerAfterAd(entertainer);
+        });
+    } else {
+        // Premium user, open directly
+        openEntertainerAfterAd(entertainer);
+    }
+}
+
+function openEntertainerAfterAd(entertainer) {
+    modalTitle.textContent = entertainer.name;
+    modalProfilePic.src = entertainer.thumbnail;
     modalProfilePic.onerror = function() {
-        this.src = 'https://via.placeholder.com/300x300?text=Channel';
+        this.src = 'https://via.placeholder.com/300x300?text=Entertainer';
     };
     
     modalFavoriteBtn.style.display = 'flex';
     modalFavoriteBtn.classList.remove('hiding');
     
-    if (isChannelSaved(channel.id)) {
+    if (isEntertainerSaved(entertainer.id)) {
         modalFavoriteBtn.style.display = 'none';
     }
     
-    currentVideoChannel = channel;
+    currentVideoEntertainer = entertainer;
     
-    videoModal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    
-    history.pushState({modalOpen: true}, null, window.location.href);
+    videoModal.classList.add('active');
 
     videoPlayer.style.width = '100%';
     videoPlayer.style.height = 'auto';
@@ -1551,6 +1015,9 @@ function openChannel(channel) {
     loadingMessage.appendChild(loadingText);
     loadingMessage.style.display = 'flex';
     
+    // Check if user is premium and start countdown if not
+    checkPremiumStatusAndStartCountdown();
+    
     if (Hls.isSupported()) {
         const hls = new Hls({
             maxMaxBufferLength: 30,
@@ -1559,7 +1026,7 @@ function openChannel(channel) {
             enableWorker: true
         });
         
-        hls.loadSource(channel.m3u8Url);
+        hls.loadSource(entertainer.m3u8Url);
         hls.attachMedia(videoPlayer);
         
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -1570,9 +1037,6 @@ function openChannel(channel) {
                 loadingMessage.style.display = 'flex';
                 loadingText.textContent = 'Click to play';
             });
-            
-            // Handle non-verified user video playback
-            handleNonVerifiedVideoPlayback();
         });
         
         const resizeObserver = new ResizeObserver(() => {
@@ -1603,7 +1067,7 @@ function openChannel(channel) {
         videoPlayer._hls = hls;
         videoPlayer._resizeObserver = resizeObserver;
     } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
-        videoPlayer.src = channel.m3u8Url;
+        videoPlayer.src = entertainer.m3u8Url;
         videoPlayer.addEventListener('loadedmetadata', () => {
             loadingMessage.style.display = 'none';
             videoPlayer.style.display = 'block';
@@ -1612,9 +1076,6 @@ function openChannel(channel) {
                 loadingMessage.style.display = 'flex';
                 loadingText.textContent = 'Click to play';
             });
-            
-            // Handle non-verified user video playback
-            handleNonVerifiedVideoPlayback();
         });
         
         videoPlayer.addEventListener('error', () => {
@@ -1625,19 +1086,55 @@ function openChannel(channel) {
     }
 }
 
+function checkPremiumStatusAndStartCountdown() {
+    // Clear any existing countdown
+    if (videoCountdownInterval) {
+        clearInterval(videoCountdownInterval);
+        videoCountdownInterval = null;
+    }
+    
+    // Check if user has premium status
+    if (currentUser) {
+        // Check if subscription is active
+        const [day, month, year] = currentUser.expiryDate.split(':').map(Number);
+        const [hour, minute] = currentUser.expiryTime.split(':').map(Number);
+        const expiryDate = new Date(year, month - 1, day, hour, minute);
+        const now = new Date();
+        
+        if (expiryDate > now) {
+            // User has active premium subscription
+            videoCountdown.style.display = 'none';
+            return;
+        }
+    }
+    
+    // User doesn't have premium or subscription expired
+    // Show countdown and start timer
+    videoCountdown.style.display = 'flex';
+    let countdownTime = 30;
+    videoCountdownTimer.textContent = countdownTime;
+    
+    videoCountdownInterval = setInterval(() => {
+        countdownTime--;
+        videoCountdownTimer.textContent = countdownTime;
+        
+        if (countdownTime <= 0) {
+            closeVideoModal();
+            // Show warning popup after closing video modal
+            openWarningPopup();
+        }
+    }, 1000);
+}
+
 function closeVideoModal() {
-    // Clear the video stop timer if it exists
-    if (videoStopTimer) {
-        clearTimeout(videoStopTimer);
-        videoStopTimer = null;
-    }
+    videoModal.classList.remove('active');
     
-    videoModal.style.display = 'none';
-    document.body.style.overflow = 'auto';
-    
-    if (history.state && history.state.modalOpen) {
-        history.back();
+    // Clear video countdown
+    if (videoCountdownInterval) {
+        clearInterval(videoCountdownInterval);
+        videoCountdownInterval = null;
     }
+    videoCountdown.style.display = 'none';
     
     if (videoPlayer._hls) {
         videoPlayer._hls.destroy();
@@ -1653,65 +1150,249 @@ function closeVideoModal() {
     videoPlayer.removeAttribute('src');
     videoPlayer.load();
     
-    currentVideoChannel = null;
+    currentVideoEntertainer = null;
 }
 
-// Event listeners for login
-watchBtn.addEventListener('click', handleLogin);
-phoneNumberInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        handleLogin();
-    }
-});
-
-// Real-time phone number validation
-phoneNumberInput.addEventListener('input', function() {
-    const phoneNumber = this.value.trim();
+function displayProfile() {
+    combinedModalBody.innerHTML = '';
     
-    if (phoneNumber.length === 11) {
-        if (!validatePhoneNumber(phoneNumber)) {
-            phoneWarning.style.display = 'block';
+    const profileContainer = document.createElement('div');
+    profileContainer.className = 'profile-container';
+    
+    if (currentUser) {
+        // Create premium user card
+        const premiumUserCard = document.createElement('div');
+        premiumUserCard.className = 'premium-user-card';
+        
+        // Crown icon
+        const crownIcon = document.createElement('div');
+        crownIcon.className = 'premium-crown';
+        crownIcon.innerHTML = '<i class="fa-solid fa-crown"></i>';
+        
+        // User name
+        const userName = document.createElement('div');
+        userName.className = 'premium-user-name';
+        userName.textContent = currentUser.name;
+        
+        // User phone
+        const userPhone = document.createElement('div');
+        userPhone.className = 'premium-user-phone';
+        userPhone.textContent = currentUser.phone;
+        
+        // Expiry date - Updated format DD-MM-YYYY | HH:MM AM/PM
+        const expiryInfo = document.createElement('div');
+        expiryInfo.className = 'premium-expiry';
+        
+        const expiryLabel = document.createElement('div');
+        expiryLabel.className = 'premium-expiry-label';
+        expiryLabel.textContent = 'Subscription Expires';
+        
+        // Format the date as DD-MM-YYYY | HH:MM AM/PM
+        const expiryValue = document.createElement('div');
+        expiryValue.className = 'premium-expiry-value';
+        // Convert from DD:MM:YYYY to DD-MM-YYYY
+        const [day, month, year] = currentUser.expiryDate.split(':');
+        // Convert time to AM/PM format
+        const timeString = convertToAMPM(currentUser.expiryTime);
+        const formattedDate = `${day}-${month}-${year} | ${timeString}`;
+        expiryValue.textContent = formattedDate;
+        
+        expiryInfo.appendChild(expiryLabel);
+        expiryInfo.appendChild(expiryValue);
+        
+        premiumUserCard.appendChild(crownIcon);
+        premiumUserCard.appendChild(userName);
+        premiumUserCard.appendChild(userPhone);
+        premiumUserCard.appendChild(expiryInfo);
+        
+        // Calculate expiry datetime
+        const expiryDate = new Date(year, month - 1, day, ...currentUser.expiryTime.split(':').map(Number));
+        const now = new Date();
+        
+        // Check if subscription has expired
+        if (expiryDate > now) {
+            // Create countdown container
+            const countdownContainer = document.createElement('div');
+            countdownContainer.className = 'countdown-container';
+            
+            const countdownTitle = document.createElement('div');
+            countdownTitle.className = 'countdown-title';
+            countdownTitle.textContent = 'Subscription Expires In';
+            
+            const countdownTimer = document.createElement('div');
+            countdownTimer.className = 'countdown-timer';
+            countdownTimer.id = 'countdownTimer';
+            
+            // Initialize countdown
+            updateCountdown(expiryDate, countdownTimer);
+            
+            // Update countdown every second
+            countdownInterval = setInterval(() => {
+                updateCountdown(expiryDate, countdownTimer);
+            }, 1000);
+            
+            countdownContainer.appendChild(countdownTitle);
+            countdownContainer.appendChild(countdownTimer);
+            premiumUserCard.appendChild(countdownContainer);
         } else {
-            phoneWarning.style.display = 'none';
+            // Show expired message and contact us button
+            const expiredMessage = document.createElement('div');
+            expiredMessage.className = 'expired-message';
+            expiredMessage.textContent = 'Subscription Expired';
+            premiumUserCard.appendChild(expiredMessage);
+            
+            const contactUsBtn = document.createElement('a');
+            contactUsBtn.href = 'https://test.com/contactus';
+            contactUsBtn.className = 'contact-us-btn';
+            contactUsBtn.textContent = 'Contact Us';
+            contactUsBtn.target = '_blank';
+            premiumUserCard.appendChild(contactUsBtn);
         }
+        
+        profileContainer.appendChild(premiumUserCard);
     } else {
-        phoneWarning.style.display = 'none';
+        // Show login form if not logged in
+        const profileTitle = document.createElement('div');
+        profileTitle.className = 'profile-title';
+        profileTitle.textContent = 'Premium Login';
+        
+        const phoneInputContainer = document.createElement('div');
+        phoneInputContainer.className = 'phone-input-container';
+        
+        const phoneInput = document.createElement('input');
+        phoneInput.type = 'tel';
+        phoneInput.className = 'phone-input';
+        phoneInput.placeholder = 'Enter 11-digit phone number';
+        phoneInput.maxLength = 11;
+        
+        const phoneWarning = document.createElement('div');
+        phoneWarning.className = 'phone-warning';
+        
+        const checkPremiumBtn = document.createElement('button');
+        checkPremiumBtn.className = 'check-premium-btn';
+        checkPremiumBtn.textContent = 'Check Premium';
+        checkPremiumBtn.disabled = true;
+        
+        // Phone number validation
+        phoneInput.addEventListener('input', function() {
+            const phoneNumber = this.value.trim();
+            
+            // Check if phone number is exactly 11 digits and contains only numbers
+            const phoneRegex = /^01[3-9]\d{8}$/; // Bangladeshi phone number format
+            if (phoneRegex.test(phoneNumber)) {
+                this.classList.remove('error');
+                phoneWarning.textContent = '';
+                checkPremiumBtn.disabled = false;
+            } else {
+                this.classList.add('error');
+                if (phoneNumber.length > 0) {
+                    phoneWarning.textContent = 'Please enter a valid 11-digit Bangladeshi phone number (e.g., 01712345678)';
+                } else {
+                    phoneWarning.textContent = '';
+                }
+                checkPremiumBtn.disabled = true;
+            }
+        });
+        
+        checkPremiumBtn.addEventListener('click', function() {
+            const phoneNumber = phoneInput.value.trim();
+            
+            // Check if phone number matches any premium user
+            const matchedUser = premiumUsers.find(user => user.phone === phoneNumber);
+            if (matchedUser) {
+                // Successful login
+                currentUser = { ...matchedUser };
+                updateWebsiteTitle();
+                
+                // Show login success alert
+                showLoginSuccessAlert();
+                
+                displayProfile(); // Refresh the profile view
+            } else {
+                // Show warning popup for incorrect phone number
+                openWarningPopup();
+            }
+        });
+        
+        phoneInputContainer.appendChild(phoneInput);
+        phoneInputContainer.appendChild(phoneWarning);
+        
+        profileContainer.appendChild(profileTitle);
+        profileContainer.appendChild(phoneInputContainer);
+        profileContainer.appendChild(checkPremiumBtn);
     }
-});
+    
+    combinedModalBody.appendChild(profileContainer);
+}
 
-// Event listeners for user profile
-userIcon.addEventListener('click', showUserProfile);
-closeUserModalHeader.addEventListener('click', closeUserProfile);
-userModal.addEventListener('click', (e) => {
-    if (e.target === userModal) {
-        closeUserProfile();
+// Helper function to convert time to AM/PM format
+function convertToAMPM(timeString) {
+    let [hours, minutes] = timeString.split(':');
+    hours = parseInt(hours);
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    return `${hours}:${minutes} ${ampm}`;
+}
+
+function showLoginSuccessAlert() {
+    loginSuccessAlert.classList.add('active');
+    
+    // Auto close after 3 seconds
+    setTimeout(() => {
+        loginSuccessAlert.classList.remove('active');
+    }, 3000);
+}
+
+function updateCountdown(expiryDate, countdownElement) {
+    const now = new Date();
+    const timeRemaining = expiryDate - now;
+    
+    if (timeRemaining <= 0) {
+        countdownElement.innerHTML = '<div class="expired-message">Subscription Expired</div>';
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+        }
+        return;
     }
-});
+    
+    // Calculate days, hours, minutes, seconds
+    const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+    
+    countdownElement.innerHTML = `
+        <div class="countdown-unit">
+            <div class="countdown-value">${days}</div>
+            <div class="countdown-label">Days</div>
+        </div>
+        <div class="countdown-unit">
+            <div class="countdown-value">${hours}</div>
+            <div class="countdown-label">Hours</div>
+        </div>
+        <div class="countdown-unit">
+            <div class="countdown-value">${minutes}</div>
+            <div class="countdown-label">Minutes</div>
+        </div>
+        <div class="countdown-unit">
+            <div class="countdown-value">${seconds}</div>
+            <div class="countdown-label">Seconds</div>
+        </div>
+    `;
+}
 
-// Event listeners for premium modal
-closePremiumModal.addEventListener('click', closePremiumWarning);
-premiumModal.addEventListener('click', (e) => {
-    if (e.target === premiumModal) {
-        closePremiumWarning();
-    }
-});
+function openWarningPopup() {
+    warningPopup.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
 
-// Event listeners for restricted modal
-restrictedModal.addEventListener('click', (e) => {
-    if (e.target === restrictedModal) {
-        closeRestrictedModal();
-    }
-});
+function closeWarningPopupFunc() {
+    warningPopup.classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
 
-// Event listeners for package modal
-packageIcon.addEventListener('click', showPackageModal);
-closePackageModal.addEventListener('click', closePackageModalFunc);
-packageModal.addEventListener('click', (e) => {
-    if (e.target === packageModal) {
-        closePackageModalFunc();
-    }
-});
-
+// Event Listeners
 closeModal.addEventListener('click', closeVideoModal);
 videoModal.addEventListener('click', (e) => {
     if (e.target === videoModal) {
@@ -1721,54 +1402,72 @@ videoModal.addEventListener('click', (e) => {
 
 modalFavoriteBtn.addEventListener('click', handleModalFavoriteClick);
 
-savedChannelsIcon.addEventListener('click', openSavedChannelsModal);
-closeSavedChannelsModal.addEventListener('click', closeSavedChannelsModalFunc);
-savedChannelsModal.addEventListener('click', (e) => {
-    if (e.target === savedChannelsModal) {
-        closeSavedChannelsModalFunc();
+savedEntertainersIcon.addEventListener('click', () => openCombinedModal('favorites'));
+tvIcon.addEventListener('click', () => openCombinedModal('tv'));
+userIcon.addEventListener('click', () => openCombinedModal('profile'));
+packageIcon.addEventListener('click', () => openCombinedModal('pricing')); // New package icon event listener
+closeCombinedModal.addEventListener('click', closeCombinedModalFunc);
+combinedModal.addEventListener('click', (e) => {
+    if (e.target === combinedModal) {
+        closeCombinedModalFunc();
     }
+});
+
+closeWarningPopup.addEventListener('click', closeWarningPopupFunc);
+warningPopup.addEventListener('click', (e) => {
+    if (e.target === warningPopup) {
+        closeWarningPopupFunc();
+    }
+});
+
+menuIcon.addEventListener('click', toggleCountryMenu);
+
+// Add event listeners to country buttons
+countryButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        const country = button.getAttribute('data-country');
+        openCombinedModal('country', country);
+        toggleCountryMenu(); // Close the country menu after selection
+    });
 });
 
 document.addEventListener('backbutton', closeVideoModal, false);
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        if (videoModal.style.display === 'flex') {
+        if (videoModal.classList.contains('active')) {
             closeVideoModal();
-        } else if (savedChannelsModal.style.display === 'flex') {
-            closeSavedChannelsModalFunc();
-        } else if (tvChannelsModal.style.display === 'flex') {
-            closeTvChannelsModalFunc();
-        } else if (toolsModal.style.display === 'flex') {
-            closeToolsModalFunc();
-        } else if (premiumModal.style.display === 'flex') {
-            closePremiumWarning();
-        } else if (userModal.style.display === 'flex') {
-            closeUserProfile();
-        } else if (restrictedModal.style.display === 'flex') {
-            closeRestrictedModal();
-        } else if (packageModal.style.display === 'flex') {
-            closePackageModalFunc();
+        } else if (combinedModal.classList.contains('active')) {
+            closeCombinedModalFunc();
+        } else if (warningPopup.classList.contains('active')) {
+            closeWarningPopupFunc();
+        } else if (isCountryMenuOpen) {
+            toggleCountryMenu();
         }
     }
 });
 
-// Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
-    // Always show login modal on page load
-    loginModal.style.display = 'flex';
+    updateWebsiteTitle();
     
+    const hlsScript = document.createElement('script');
+    hlsScript.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
+    hlsScript.onload = () => {
+        loadEntertainers();
+    };
+    hlsScript.onerror = () => {
+        loadEntertainers();
+    };
+    document.head.appendChild(hlsScript);
+
     window.addEventListener('popstate', handleBrowserBackButton);
-    
-    history.pushState(null, null, window.location.href);
 });
 
 window.addEventListener('beforeunload', () => {
-    // Cleanup code
-    activeChannels.forEach(channel => {
-        stopThumbnailUpdates(channel);
-        if (channel._hls) {
-            channel._hls.destroy();
+    activeEntertainers.forEach(entertainer => {
+        stopThumbnailUpdates(entertainer);
+        if (entertainer._hls) {
+            entertainer._hls.destroy();
         }
     });
     
@@ -1788,11 +1487,11 @@ window.addEventListener('beforeunload', () => {
         clearInterval(autoRecheckIntervalId);
     }
     
-    if (videoStopTimer) {
-        clearTimeout(videoStopTimer);
-    }
-    
     if (countdownInterval) {
         clearInterval(countdownInterval);
+    }
+    
+    if (videoCountdownInterval) {
+        clearInterval(videoCountdownInterval);
     }
 });
